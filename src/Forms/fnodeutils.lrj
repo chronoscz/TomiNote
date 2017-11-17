@@ -1,0 +1,12 @@
+{"version":1,"strings":[
+{"hash":123337619,"name":"tformnodeutils.caption","sourcebytes":[78,111,100,101,32,85,116,105,108,115],"value":"Node Utils"},
+{"hash":370324,"name":"tformnodeutils.tabssort.caption","sourcebytes":[83,111,114,116],"value":"Sort"},
+{"hash":237830398,"name":"tformnodeutils.radgsortdirection.caption","sourcebytes":[83,111,114,116,32,68,105,114,101,99,116,105,111,110],"value":"Sort Direction"},
+{"hash":174679302,"name":"tformnodeutils.radgsortof.caption","sourcebytes":[83,111,114,116,32,79,102],"value":"Sort Of"},
+{"hash":5927684,"name":"tformnodeutils.tabssplit.caption","sourcebytes":[83,112,108,105,116],"value":"Split"},
+{"hash":109630626,"name":"tformnodeutils.lablseparator.caption","sourcebytes":[83,101,112,97,114,97,116,111,114],"value":"Separator"},
+{"hash":107315705,"name":"tformnodeutils.chkbaddprenum.caption","sourcebytes":[65,100,100,32,112,114,101,102,105,120,32,110,117,109,98,101,114,32,40,76,101,110,103,116,104,41],"value":"Add prefix number (Length)"},
+{"hash":5966629,"name":"tformnodeutils.labltitle.caption","sourcebytes":[84,105,116,108,101],"value":"Title"},
+{"hash":107311689,"name":"tformnodeutils.chkbaddsufnum.caption","sourcebytes":[65,100,100,32,115,117,102,102,105,120,32,110,117,109,98,101,114,32,40,76,101,110,103,116,104,41],"value":"Add suffix number (Length)"},
+{"hash":226466450,"name":"tformnodeutils.chkbincludeseparator.caption","sourcebytes":[73,110,99,108,117,100,101,32,83,101,112,97,114,97,116,111,114],"value":"Include Separator"}
+]}

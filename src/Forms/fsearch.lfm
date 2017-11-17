@@ -1,0 +1,206 @@
+object formSearch: TformSearch
+  Left = 435
+  Height = 420
+  Top = 155
+  Width = 300
+  AutoSize = True
+  Caption = 'Search'
+  ClientHeight = 420
+  ClientWidth = 300
+  DefaultMonitor = dmMainForm
+  FormStyle = fsStayOnTop
+  OnClose = FormClose
+  OnCreate = FormCreate
+  Position = poDesktopCenter
+  LCLVersion = '1.8.0.4'
+  object radgSearchFrom: TRadioGroup
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = Owner
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    Left = 8
+    Height = 116
+    Top = 2
+    Width = 284
+    Anchors = [akTop, akLeft, akRight]
+    AutoFill = True
+    AutoSize = True
+    BorderSpacing.Left = 8
+    BorderSpacing.Top = 2
+    BorderSpacing.Right = 8
+    ChildSizing.LeftRightSpacing = 6
+    ChildSizing.TopBottomSpacing = 6
+    ChildSizing.VerticalSpacing = 6
+    ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
+    ChildSizing.EnlargeVertical = crsHomogenousChildResize
+    ChildSizing.ShrinkHorizontal = crsScaleChilds
+    ChildSizing.ShrinkVertical = crsScaleChilds
+    ChildSizing.Layout = cclLeftToRightThenTopToBottom
+    ChildSizing.ControlsPerLine = 1
+    ClientHeight = 114
+    ClientWidth = 282
+    Items.Strings = (
+      'Search in selected node'
+      'Search in selected nodes'
+      'Search in all nodes'
+    )
+    OnSelectionChanged = radgSearchFromSelectionChanged
+    TabOrder = 2
+  end
+  object bttnSearch: TButton
+    AnchorSideLeft.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    AnchorSideBottom.Control = Owner
+    AnchorSideBottom.Side = asrBottom
+    Left = 16
+    Height = 40
+    Top = 372
+    Width = 100
+    Anchors = [akLeft, akBottom]
+    AutoSize = True
+    BorderSpacing.Left = 16
+    BorderSpacing.Bottom = 8
+    Constraints.MinHeight = 32
+    Constraints.MinWidth = 100
+    OnClick = bttnSearchClick
+    TabOrder = 7
+  end
+  object bttnCancel: TButton
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    AnchorSideBottom.Control = Owner
+    AnchorSideBottom.Side = asrBottom
+    Left = 184
+    Height = 40
+    Top = 372
+    Width = 100
+    Anchors = [akRight, akBottom]
+    AutoSize = True
+    BorderSpacing.Right = 16
+    BorderSpacing.Bottom = 8
+    Constraints.MinHeight = 32
+    Constraints.MinWidth = 100
+    OnClick = bttnCancelClick
+    TabOrder = 8
+  end
+  object chkbSearchName: TCheckBox
+    AnchorSideTop.Control = combReplace
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    Left = 8
+    Height = 30
+    Top = 216
+    Width = 284
+    Anchors = [akTop, akLeft, akRight]
+    BorderSpacing.Top = 6
+    BorderSpacing.Right = 8
+    Caption = 'Search in node name'
+    TabOrder = 4
+  end
+  object chkbSearchNote: TCheckBox
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = chkbSearchName
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    Left = 8
+    Height = 30
+    Top = 252
+    Width = 284
+    Anchors = [akTop, akLeft, akRight]
+    BorderSpacing.Left = 8
+    BorderSpacing.Top = 6
+    BorderSpacing.Right = 8
+    Caption = 'Search in node note'
+    TabOrder = 5
+  end
+  object chkbDoReplace: TCheckBox
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = combReplace
+    AnchorSideTop.Side = asrCenter
+    Left = 8
+    Height = 30
+    Top = 175
+    Width = 101
+    BorderSpacing.Left = 8
+    BorderSpacing.Top = 10
+    Caption = 'Replace'
+    OnChange = chkbDoReplaceChange
+    TabOrder = 3
+  end
+  object chkbUseRegexpr: TCheckBox
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = chkbSearchNote
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    Left = 8
+    Height = 30
+    Top = 288
+    Width = 284
+    Anchors = [akTop, akLeft, akRight]
+    BorderSpacing.Left = 8
+    BorderSpacing.Top = 6
+    BorderSpacing.Right = 8
+    BorderSpacing.Bottom = 60
+    Caption = 'Use regular expression'
+    TabOrder = 6
+  end
+  object combSearch: TComboBox
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = radgSearchFrom
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    Left = 8
+    Height = 40
+    Top = 124
+    Width = 284
+    Anchors = [akTop, akLeft, akRight]
+    AutoSelect = False
+    BorderSpacing.Left = 8
+    BorderSpacing.Top = 6
+    BorderSpacing.Right = 8
+    ItemHeight = 0
+    OnCloseUp = combSearchCloseUp
+    OnKeyDown = combSearchKeyDown
+    TabOrder = 0
+  end
+  object combReplace: TComboBox
+    AnchorSideLeft.Control = chkbDoReplace
+    AnchorSideLeft.Side = asrBottom
+    AnchorSideTop.Control = combSearch
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    Left = 115
+    Height = 40
+    Top = 170
+    Width = 177
+    Anchors = [akTop, akLeft, akRight]
+    AutoSelect = False
+    BorderSpacing.Left = 6
+    BorderSpacing.Top = 6
+    BorderSpacing.Right = 8
+    ItemHeight = 0
+    OnCloseUp = combReplaceCloseUp
+    OnKeyDown = combReplaceKeyDown
+    TabOrder = 1
+  end
+  object lablSpace: TLabel
+    AnchorSideLeft.Control = bttnSearch
+    AnchorSideLeft.Side = asrBottom
+    AnchorSideTop.Control = bttnSearch
+    AnchorSideRight.Control = bttnCancel
+    AnchorSideBottom.Control = bttnSearch
+    AnchorSideBottom.Side = asrBottom
+    Left = 116
+    Height = 40
+    Top = 372
+    Width = 68
+    Anchors = [akTop, akLeft, akRight, akBottom]
+    Constraints.MinWidth = 16
+    ParentColor = False
+  end
+end

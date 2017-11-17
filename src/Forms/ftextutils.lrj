@@ -1,0 +1,8 @@
+{"version":1,"strings":[
+{"hash":106497219,"name":"tformtextutils.caption","sourcebytes":[84,101,120,116,32,85,116,105,108,115],"value":"Text Utils"},
+{"hash":94015604,"name":"tformtextutils.tabsscript.caption","sourcebytes":[83,99,114,105,112,116],"value":"Script"},
+{"hash":181473209,"name":"tformtextutils.chkbsearchinselection.caption","sourcebytes":[83,101,97,114,99,104,32,105,110,32,115,101,108,101,99,116,101,100,32,116,101,120,116,32,40,38,83,41],"value":"Search in selected text (&S)"},
+{"hash":43,"name":"tformtextutils.bttnaddscript.caption","sourcebytes":[43],"value":"+"},
+{"hash":45,"name":"tformtextutils.bttndeletescript.caption","sourcebytes":[45],"value":"-"},
+{"hash":42,"name":"tformtextutils.bttnmodifyscript.caption","sourcebytes":[42],"value":"*"}
+]}

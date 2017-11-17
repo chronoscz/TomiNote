@@ -1,0 +1,55 @@
+object formHelp: TformHelp
+  Left = 435
+  Height = 480
+  Top = 154
+  Width = 640
+  ClientHeight = 480
+  ClientWidth = 640
+  OnClose = FormClose
+  OnCreate = FormCreate
+  Position = poDesktopCenter
+  LCLVersion = '1.8.0.4'
+  object bttnClose: TButton
+    AnchorSideLeft.Control = Owner
+    AnchorSideLeft.Side = asrCenter
+    AnchorSideRight.Side = asrBottom
+    AnchorSideBottom.Control = Owner
+    AnchorSideBottom.Side = asrBottom
+    Left = 270
+    Height = 40
+    Top = 432
+    Width = 100
+    Anchors = [akLeft, akBottom]
+    AutoSize = True
+    BorderSpacing.Bottom = 8
+    Cancel = True
+    Constraints.MinHeight = 32
+    Constraints.MinWidth = 100
+    OnClick = bttnCloseClick
+    TabOrder = 1
+  end
+  object memoContent: TMemo
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = Owner
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    AnchorSideBottom.Control = Owner
+    AnchorSideBottom.Side = asrBottom
+    Left = 8
+    Height = 412
+    Top = 8
+    Width = 624
+    Anchors = [akTop, akLeft, akRight, akBottom]
+    BorderSpacing.Left = 8
+    BorderSpacing.Top = 8
+    BorderSpacing.Right = 8
+    BorderSpacing.Bottom = 60
+    BorderStyle = bsNone
+    Color = clWindow
+    OnKeyDown = memoContentKeyDown
+    OnMouseWheel = memoContentMouseWheel
+    ReadOnly = True
+    ScrollBars = ssAutoVertical
+    TabOrder = 0
+  end
+end

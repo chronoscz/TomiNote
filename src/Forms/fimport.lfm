@@ -1,0 +1,177 @@
+object formImport: TformImport
+  Left = 428
+  Height = 420
+  Top = 154
+  Width = 300
+  AutoSize = True
+  Caption = 'Import'
+  ClientHeight = 420
+  ClientWidth = 300
+  FormStyle = fsStayOnTop
+  OnClose = FormClose
+  OnCreate = FormCreate
+  Position = poDesktopCenter
+  LCLVersion = '1.8.0.4'
+  object radgAttachMode: TRadioGroup
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = radgImportFrom
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    Left = 8
+    Height = 152
+    Top = 124
+    Width = 284
+    Anchors = [akTop, akLeft, akRight]
+    AutoFill = True
+    AutoSize = True
+    BorderSpacing.Left = 8
+    BorderSpacing.Top = 6
+    BorderSpacing.Right = 8
+    ChildSizing.LeftRightSpacing = 6
+    ChildSizing.TopBottomSpacing = 6
+    ChildSizing.VerticalSpacing = 6
+    ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
+    ChildSizing.EnlargeVertical = crsHomogenousChildResize
+    ChildSizing.ShrinkHorizontal = crsScaleChilds
+    ChildSizing.ShrinkVertical = crsScaleChilds
+    ChildSizing.Layout = cclLeftToRightThenTopToBottom
+    ChildSizing.ControlsPerLine = 1
+    ClientHeight = 150
+    ClientWidth = 282
+    Items.Strings = (
+      'Import as the next node'
+      'Import as the prev node'
+      'Import as the first child'
+      'Import as the last child'
+    )
+    TabOrder = 1
+  end
+  object chkbIncludeFileExt: TCheckBox
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = radgAttachMode
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    Left = 8
+    Height = 30
+    Top = 282
+    Width = 284
+    Anchors = [akTop, akLeft, akRight]
+    BorderSpacing.Left = 8
+    BorderSpacing.Top = 6
+    BorderSpacing.Right = 8
+    Caption = 'Include file extension'
+    TabOrder = 2
+  end
+  object chkbIncludeEntryDir: TCheckBox
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = chkbIncludeFileExt
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    Left = 8
+    Height = 30
+    Top = 318
+    Width = 284
+    Anchors = [akTop, akLeft, akRight]
+    BorderSpacing.Left = 8
+    BorderSpacing.Top = 6
+    BorderSpacing.Right = 8
+    BorderSpacing.Bottom = 60
+    Caption = 'Include entry directory'
+    TabOrder = 3
+  end
+  object radgImportFrom: TRadioGroup
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = Owner
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    Left = 8
+    Height = 116
+    Top = 2
+    Width = 284
+    Anchors = [akTop, akLeft, akRight]
+    AutoFill = True
+    AutoSize = True
+    BorderSpacing.Left = 8
+    BorderSpacing.Top = 2
+    BorderSpacing.Right = 8
+    ChildSizing.LeftRightSpacing = 6
+    ChildSizing.TopBottomSpacing = 6
+    ChildSizing.VerticalSpacing = 6
+    ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
+    ChildSizing.EnlargeVertical = crsHomogenousChildResize
+    ChildSizing.ShrinkHorizontal = crsScaleChilds
+    ChildSizing.ShrinkVertical = crsScaleChilds
+    ChildSizing.Layout = cclLeftToRightThenTopToBottom
+    ChildSizing.ControlsPerLine = 1
+    ClientHeight = 114
+    ClientWidth = 282
+    Items.Strings = (
+      'Import from file'
+      'Import from directory'
+      'Import from database'
+    )
+    OnSelectionChanged = radgImportFromSelectionChanged
+    TabOrder = 0
+  end
+  object bttnCancel: TButton
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    AnchorSideBottom.Control = Owner
+    AnchorSideBottom.Side = asrBottom
+    Left = 184
+    Height = 40
+    Top = 372
+    Width = 100
+    Anchors = [akRight, akBottom]
+    AutoSize = True
+    BorderSpacing.Right = 16
+    BorderSpacing.Bottom = 8
+    Constraints.MinHeight = 32
+    Constraints.MinWidth = 100
+    OnClick = bttnCancelClick
+    TabOrder = 5
+  end
+  object bttnImport: TButton
+    AnchorSideLeft.Control = Owner
+    AnchorSideBottom.Control = Owner
+    AnchorSideBottom.Side = asrBottom
+    Left = 16
+    Height = 40
+    Top = 372
+    Width = 100
+    Anchors = [akLeft, akBottom]
+    AutoSize = True
+    BorderSpacing.Left = 16
+    BorderSpacing.Bottom = 8
+    Constraints.MinHeight = 32
+    Constraints.MinWidth = 100
+    OnClick = bttnImportClick
+    TabOrder = 4
+  end
+  object lablSpace: TLabel
+    AnchorSideLeft.Control = bttnImport
+    AnchorSideLeft.Side = asrBottom
+    AnchorSideTop.Control = bttnImport
+    AnchorSideRight.Control = bttnCancel
+    AnchorSideBottom.Control = bttnImport
+    AnchorSideBottom.Side = asrBottom
+    Left = 116
+    Height = 40
+    Top = 372
+    Width = 68
+    Anchors = [akTop, akLeft, akRight, akBottom]
+    Constraints.MinWidth = 16
+    ParentColor = False
+  end
+  object sddg1: TSelectDirectoryDialog
+    left = 192
+    top = 32
+  end
+  object opdg1: TOpenDialog
+    left = 152
+    top = 32
+  end
+end
