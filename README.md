@@ -9,7 +9,7 @@ TomiNote is a simple note collection tool that supports the following features:
 - 07, support automatic save and automatic backup
 - 08, support multi-node search and replace (support for regular expressions)
 - 09, support sort node
-- 10, support split the note into multiple sub-nodes
+- 10, support split the note into multiple sub-nodes (regular expression)
 - 11, support multi-replace (regular expression)
 - 12, Support adjust the user interface (full screen, full window)
 - 13, support custom font name and font size
@@ -37,7 +37,7 @@ TomiNote 是一个简单的文本编辑工具，它支持以下特性：
 - 07、支持自动保存和自动备份
 - 08、支持多节点搜索和替换（支持正则表达式）
 - 09、支持节点排序
-- 10、支持将节点文本分割为多个子节点
+- 10、支持将节点文本分割为多个子节点（正则表达式）
 - 11、支持文本的多重替换（正则表达式）
 - 12、支持自由调整用户界面（全屏、满窗）
 - 13、支持自定义字体名称和字体大小
