@@ -1,4 +1,4 @@
-TomiNode is a simple note collection tool that supports the following features:
+TomiNote is a simple note collection tool that supports the following features:
 
 - 01, support multi-language switch
 - 02, support tree directory
@@ -26,7 +26,7 @@ This program has only been tested in the Linux Mint MATE 64-bit and has not been
 
 　
 
-TomiNode 是一个简单的文本编辑工具，它支持以下特性：
+TomiNote 是一个简单的文本编辑工具，它支持以下特性：
 
 - 01、支持多语言切换
 - 02、支持树形目录
