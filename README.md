@@ -11,7 +11,7 @@ TomiNote is a simple note collection tool that supports the following features:
 - 09, support sort node
 - 10, support split the note into multiple sub-nodes (regular expression)
 - 11, support multi-replace (regular expression)
-- 12, Support adjust the user interface (full screen, full window)
+- 12, support adjust the user interface (full screen, full window)
 - 13, support custom font name and font size
 - 14, support custom foreground and background colors
 
