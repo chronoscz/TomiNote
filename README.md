@@ -16,7 +16,7 @@ TomiNote is a simple note collection tool that supports the following features:
 - 14, support custom foreground and background colors
 
 
-For more features, please check the software help information.
+For more features, please check the software help information, or [wiki](https://github.com/tomitomy/TomiNote/wiki)
 
 This program has only been tested in the Linux Mint MATE 64-bit and has not been tested on other platforms. If you compile this program on other platforms, you may need to make the appropriate adjustments.
 
@@ -43,7 +43,7 @@ TomiNote 是一个简单的文本编辑工具，它支持以下特性：
 - 13、支持自定义字体名称和字体大小
 - 14、支持自定义前景色和背景色
 
-更多功能请查看软件的帮助信息。
+更多功能请查看软件的帮助信息，或查看[维基帮助](https://github.com/tomitomy/TomiNote/wiki)
 
 本程序只在 Linux Mint MATE 64-bit 中做了测试，其它平台未做测试，如果你在其它平台编译本程序，可能需要做适当调整。
 
