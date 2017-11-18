@@ -1197,7 +1197,7 @@ var
   FixNum: Integer;
   Str: string;
 begin
-  if SearchResult.Count = 0 then Exit;
+  if lstbInfo.ItemIndex = -1 then Exit;
 
   FFocusNote := True;
 
