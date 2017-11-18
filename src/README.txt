@@ -20,6 +20,8 @@ For more features, please check the software help information.
 
 This program has only been tested in the Linux Mint MATE 64-bit and has not been tested on other platforms. If you compile this program on other platforms, you may need to make the appropriate adjustments.
 
+If you compile this program GTK2 version, please apply all the patches here first:
+https://bugs.freepascal.org/view.php?id=32583
 
 
 TomiNote 是一个简单的笔记收集工具，它支持以下特性：
@@ -42,5 +44,8 @@ TomiNote 是一个简单的笔记收集工具，它支持以下特性：
 更多功能请查看软件的帮助信息。
 
 本程序只在 Linux Mint MATE 64-bit 中做了测试，其它平台未做测试，如果你在其它平台编译本程序，可能需要做适当调整。
+
+如果你编译本程序的 GTK2 版本，请先应用这里的所有补丁：
+https://bugs.freepascal.org/view.php?id=32583
 
 
