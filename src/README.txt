@@ -1,3 +1,4 @@
+
 TomiNote is a simple note collection tool that supports the following features:
 
 01, support multi-language switch
