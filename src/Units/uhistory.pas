@@ -174,14 +174,11 @@ type
     property  OnHistoryChanged: TNotifyEvent read FOnHistoryChanged write FOnHistoryChanged;
   end;
 
-  function UTF8DiffBytePos(Str1, Str2: string; var Start1, Start2: integer; Reverse: boolean = False): boolean;
-  function UTF8Diff(Str1, Str2: string; var Start1, Start2: integer; Reverse: boolean = False): boolean;
-  function ToLF(Str: string): string;
 
 implementation
 
 uses
-  lazUTF8;
+  lazUTF8, ucommon;
 
 { THistory }
 
@@ -469,7 +466,7 @@ end;
 procedure THistoryManager.CalcRecordGTK2Memo(PHR: PHistoryRecord);
 var
   BPrevSelStart, BSelLength: integer;
-  BSelStartFix, BSelStartFix2: integer;
+  BSelStartFix, BSelStartFix2: SizeInt;
   SelStart: integer;
   PrevSelText, SelText: string;
 begin
@@ -590,7 +587,7 @@ end;
 procedure THistoryManager.CalcRecordHard(PHR: PHistoryRecord);
 var
   PrevLen, Len: integer;
-  SelStart, PrevSelStart, SelLength: integer;
+  SelStart, PrevSelStart, SelLength: SizeInt;
   SelText: string;
 begin
   Len     := Length(FEdit.Text);
@@ -801,116 +798,6 @@ begin
   end
   else
     FEdit.OnChange := FOldEditChange;
-end;
-
-// 查找 Str1 和 Str2 的不同之处，参数和返回值的索引都是从 1 开始，到 Length(Str) 结束。
-// Start1 表示 Str1 的起始查找位置，查找结果也通过该参数返回。
-// Start2 表示 Str2 的起始查找位置，查找结果也通过该参数返回。
-// Reverse 为 True 表示向头查找，False 表示向尾查找。
-// 返回值：True 表示找到，False 表示没找到。
-// 如果没找到，则向头查找时，某一 Start 返回 0，向尾查找时某一 Start 返回 UTF8Length(Str)+1。
-function UTF8DiffBytePos(Str1, Str2: string; var Start1, Start2: integer; Reverse: boolean = False): boolean;
-
-  procedure GoToCpStartStr1;
-  var
-    b: byte;
-  begin  // 回到 Str1 中字符码点的起始位置
-    while Start1 > 0 do begin // 如果 UTF8 编码不正确，则 Start1 可能小于等于 0。
-      b := Ord(Str1[Start1]) shr 6;
-      if (b = 3) or (b shr 1 = 0) then
-        break;
-      Dec(Start1);
-    end;
-  end;
-
-  procedure GoToCpStartStr2;
-  var
-    b: byte;
-  begin  // 回到 Str2 中字符码点的起始位置
-    while Start2 > 0 do begin // 如果 UTF8 编码不正确，则 Start2 可能小于等于 0。
-      b := Ord(Str2[Start2]) shr 6;
-      if (b = 3) or (b shr 1 = 0) then
-        break;
-      Dec(Start2);
-    end;
-  end;
-
-begin
-  Result := False;
-  if (Start1 <= 0) or (Start2 <= 0) or (Start1 > Str1.Length) or (Start2 > Str2.Length) then Exit;
-
-  if Reverse then begin
-    while (Start1 >= 1) and (Start2 >= 1) and (Str1[Start1] = Str2[Start2]) do begin
-      Dec(Start1);
-      Dec(Start2);
-    end;
-    if Start1 > 1 then
-      GoToCpStartStr1;
-    if Start2 > 1 then
-      GoToCpStartStr2;
-    Result := (Start1 > 0) and (Start2 > 0);
-  end else begin
-    while (Start1 <= Str1.Length) and (Start2 <= Str2.Length) and (Str1[Start1] = Str2[Start2]) do begin
-      Inc(Start1);
-      Inc(Start2);
-    end;
-    if Start1 <= Str1.Length then
-      GoToCpStartStr1;
-    if Start2 <= Str2.Length then
-      GoToCpStartStr2;
-    Result := (Start1 <= Str1.Length) and (Start2 <= Str2.Length);
-  end;
-end;
-
-// 查找 Str1 和 Str2 的不同之处，参数和返回值的索引都是从 1 开始，到 UTF8Length(Str) 结束。
-// Start1 表示 Str1 的起始查找位置，查找结果也通过该参数返回。
-// Start2 表示 Str2 的起始查找位置，查找结果也通过该参数返回。
-// Reverse 为 True 表示向头查找，False 表示向尾查找。
-// 返回值：True 表示找到，False 表示没找到。
-// 如果没找到，则向头查找时，某一 Start 返回 0，向尾查找时某一 Start 返回 UTF8Length(Str)+1。
-function UTF8Diff(Str1, Str2: string; var Start1, Start2: integer; Reverse: boolean = False): boolean;
-begin
-  if not Reverse then begin
-    Dec(Start1);
-    Dec(Start2);
-  end;
-
-  Start1 := UTF8CharToByteIndex(PChar(Str1), Str1.Length, Start1);
-  Start2 := UTF8CharToByteIndex(PChar(Str2), Str2.Length, Start2);
-
-  if not Reverse then begin
-    Inc(Start1);
-    Inc(Start2);
-  end;
-
-  Result := UTF8DiffBytePos(Str1, Str2, Start1, Start2, Reverse);
-
-  if Start1 > 0 then Start1 := UTF8Length(PChar(Str1), Start1 - 1) + 1;
-  if Start2 > 0 then Start2 := UTF8Length(PChar(Str2), Start2 - 1) + 1;
-end;
-
-function ToLF(Str: string): string;
-var
-  iStart, iEnd: integer;
-  Stream: TStringStream;
-begin
-  iStart := 0;
-  Stream := TStringStream.Create('');
-  try
-    iEnd := Str.IndexOf(#13, iStart);
-    while iEnd <> -1 do begin
-      Stream.WriteString(Str.Substring(iStart, iEnd - iStart));
-      if (iEnd = Str.Length - 1) or (Str[iEnd + 2] <> #10) then
-        Stream.WriteString(#10);
-      iStart := iEnd + 1;
-      iEnd := Str.IndexOf(#13, iStart);
-    end;
-    if (iEnd < Str.Length - 1) then
-      Stream.WriteString(Str.Substring(iStart));
-    Result := Stream.DataString;
-  finally
-    Stream.Free;
-  end;
 end;
 
 end.
