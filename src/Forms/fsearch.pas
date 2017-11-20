@@ -94,7 +94,7 @@ begin
 
   chkbSearchName.Checked     := Config.SearchName;
   chkbSearchNote.Checked     := Config.SearchNote;
-  chkbIgnoreCase.Checked     := Config.SearchCaseSensitive;
+  chkbIgnoreCase.Checked     := Config.SearchIgnoreCase;
   chkbUseRegexpr.Checked     := True; // 用来保证 chkbMultiLine 和 chkbNonGreedy 的状态正常
   chkbUseRegexpr.Checked     := Config.UseRegExpr;
   chkbMultiLine.Checked      := Config.SearchMultiLine;
@@ -129,7 +129,7 @@ begin
   Config.DoReplace           := chkbDoReplace.Checked;
   Config.SearchName          := chkbSearchName.Checked;
   Config.SearchNote          := chkbSearchNote.Checked;
-  Config.SearchCaseSensitive := chkbIgnoreCase.Checked;
+  Config.SearchIgnoreCase    := chkbIgnoreCase.Checked;
   Config.UseRegExpr          := chkbUseRegexpr.Checked;
   Config.SearchMultiLine     := chkbMultiLine.Checked;
   Config.SearchNonGreedy     := chkbNonGreedy.Checked;
