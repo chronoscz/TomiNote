@@ -94,7 +94,7 @@ begin
   combSeparator.Text            := Config.SeparatorText;
   combTitle.Text                := Config.TitleText;
 
-  chkbIgnoreCase.Checked        := Config.SplitCaseSensitive;
+  chkbIgnoreCase.Checked        := Config.SplitIgnoreCase;
   chkbMultiLine.Checked         := Config.SplitMultiLine;
   chkbNonGreedy.Checked         := Config.SplitNonGreedy;
 
@@ -136,7 +136,7 @@ begin
   Config.SeparatorText          := combSeparator.Text;
   Config.TitleText              := combTitle.Text;
 
-  Config.SplitCaseSensitive     := chkbIgnoreCase.Checked;
+  Config.SplitIgnoreCase        := chkbIgnoreCase.Checked;
   Config.SplitMultiLine         := chkbMultiLine.Checked;
   Config.SplitNonGreedy         := chkbNonGreedy.Checked;
 
