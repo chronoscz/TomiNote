@@ -1,7 +1,6 @@
 program TomiNote;
 
 {$mode objfpc}{$H+}
-{$CODEPAGE UTF8}
 
 uses
   {$IFDEF UNIX}{$IFDEF UseCThreads}
