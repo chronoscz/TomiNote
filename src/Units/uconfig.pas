@@ -46,7 +46,10 @@ type
     SearchFrom            : integer;
     SearchName            : boolean;
     SearchNote            : boolean;
+    SearchCaseSensitive   : boolean;
     UseRegExpr            : boolean;
+    SearchMultiLine       : boolean;
+    SearchNonGreedy       : boolean;
 
     SearchText            : string;
     DoReplace             : boolean;
@@ -88,6 +91,9 @@ type
 
     SeparatorText         : string;
     TitleText             : string;
+    SplitCaseSensitive    : boolean;
+    SplitMultiLine        : boolean;
+    SplitNonGreedy        : boolean;
     IncludeSeparator      : boolean;
     AddPrefixNumber       : boolean;
     AddSuffixNumber       : boolean;
@@ -196,9 +202,13 @@ ResourceString
   Res_Activated           = 'Activated';
   Res_NotActive           = 'NotActive';
 
+  Res_IgnoreCase          = 'Ignore case';
+  Res_MultiLine           = 'Multi line';
+  Res_NonGreedy           = 'Non greedy';
+
 const
   AppTitle                = 'TomiNote';
-  Version                 = 'v1.0 Beta';
+  Version                 = 'v1.0 Beta2';
 
   AllDepth                = 0;
 
@@ -384,7 +394,10 @@ begin
     DoReplace             := IniFile.ReadBool   ('Search', 'DoReplace', False);
     SearchName            := IniFile.ReadBool   ('Search', 'SearchName', False);
     SearchNote            := IniFile.ReadBool   ('Search', 'SearchNote', True);
+    SearchCaseSensitive   := IniFile.ReadBool   ('Search', 'CaseSensitive', False);
     UseRegExpr            := IniFile.ReadBool   ('Search', 'UseRegExpr', False);
+    SearchMultiLine       := IniFile.ReadBool   ('Search', 'MultiLine', True);
+    SearchNonGreedy       := IniFile.ReadBool   ('Search', 'NonGreedy', True);
 
     SearchText            := IniFile.ReadString ('Search', 'SearchText', '');
     ReplaceText           := IniFile.ReadString ('Search', 'ReplaceText', '');
@@ -446,6 +459,9 @@ begin
 
     SeparatorText         := IniFile.ReadString ('NodeUtils', 'SeparatorText', '');
     TitleText             := IniFile.ReadString ('NodeUtils', 'TitleText', '');
+    SplitCaseSensitive    := IniFile.ReadBool   ('NodeUtils', 'CaseSensitive', False);
+    SplitMultiLine        := IniFile.ReadBool   ('NodeUtils', 'MultiLine', True);
+    SplitNonGreedy        := IniFile.ReadBool   ('NodeUtils', 'NonGreedy', True);
     IncludeSeparator      := IniFile.ReadBool   ('NodeUtils', 'IncludeSeparator', True);
     AddPrefixNumber       := IniFile.ReadBool   ('NodeUtils', 'AddPrefixNumber', False);
     AddSuffixNumber       := IniFile.ReadBool   ('NodeUtils', 'AddSuffixNumber', False);
@@ -609,7 +625,10 @@ begin
     IniFile.WriteBool   ('Search', 'DoReplace', DoReplace);
     IniFile.WriteBool   ('Search', 'SearchName', SearchName);
     IniFile.WriteBool   ('Search', 'SearchNote', SearchNote);
+    IniFile.WriteBool   ('Search', 'CaseSensitive', SearchCaseSensitive);
     IniFile.WriteBool   ('Search', 'UseRegExpr', UseRegExpr);
+    IniFile.WriteBool   ('Search', 'MultiLine', SearchMultiLine);
+    IniFile.WriteBool   ('Search', 'NonGreedy', SearchNonGreedy);
 
     IniFile.WriteString ('Search', 'SearchText', '"' + SearchText + '"');
     IniFile.WriteString ('Search', 'ReplaceText', '"' + ReplaceText + '"');
@@ -644,7 +663,7 @@ begin
     IniFile.WriteBool   ('Import', 'IncludeFileExt', ImportFileExt);
     IniFile.WriteBool   ('Import', 'IncludeRootDir', ImportRootDir);
 
-    IniFile.WriteString ('Export', 'LastImportDir', '"' + LastImportDir + '"');
+    IniFile.WriteString ('Import', 'LastImportDir', '"' + LastImportDir + '"');
 
     // 导出
     IniFile.WriteBool   ('Export', 'KeepExportFormRect', KeepExportFormRect);
@@ -691,6 +710,10 @@ begin
       else
         IniFile.WriteString('NodeUtils', 'RecentTitle' + IntToStr(i), '');
     end;
+
+    IniFile.WriteBool   ('NodeUtils', 'CaseSensitive', SplitCaseSensitive);
+    IniFile.WriteBool   ('NodeUtils', 'MultiLine', SplitMultiLine);
+    IniFile.WriteBool   ('NodeUtils', 'NonGreedy', SplitNonGreedy);
 
     IniFile.WriteBool   ('NodeUtils', 'IncludeSeparator', IncludeSeparator);
     IniFile.WriteBool   ('NodeUtils', 'AddPrefixNumber', AddPrefixNumber);
