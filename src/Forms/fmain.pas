@@ -2,14 +2,13 @@ unit fmain;
 
 {.$APPTYPE CONSOLE}
 {$mode objfpc}{$H+}
-{$CODEPAGE UTF8}
 
 interface
 
 uses
   Classes, SysUtils, Forms, Controls, StdCtrls, ComCtrls, ExtCtrls, Graphics,
-  Menus, ActnList, Dialogs, Types, LCLIntf, LCLType, lazUTF8, Clipbrd, RegExpr,
-  utreedb, uhistory, LCLTranslator;
+  Menus, ActnList, Dialogs, Types, LCLType, lazUTF8, Clipbrd, RegExpr,
+  utreedb, uhistory, ucommon, LCLTranslator;
 
 type
 
@@ -455,8 +454,8 @@ type
     procedure SplitNote(SplitterPattern, TitlePattern: string; IncludeSplitter: boolean; PreNumLen, SufNumLen: integer);
     procedure ScriptReplace(Script: string; InSelection: boolean);
 
-    procedure Search(ANode: TTreeNode; AText: string; IncludeName, IncludeNote: boolean; ADepth: integer);
-    procedure Replace(ANode: TTreeNode; AFrom, ATo: string; IncludeName, IncludeNote: boolean; ADepth: integer);
+    procedure Search(ANode: TTreeNode; AText: string; IncludeName, IncludeNote: boolean; ADepth: integer; IgnoreCase: boolean);
+    procedure Replace(ANode: TTreeNode; AFrom, ATo: string; IncludeName, IncludeNote: boolean; ADepth: integer; IgnoreCase: boolean);
     procedure RegSearch(ANode: TTreeNode; AText: string; IncludeName, IncludeNote: boolean; ADepth: integer);
     procedure RegReplace(ANode: TTreeNode; AFrom, ATo: string; IncludeName, IncludeNote: boolean; ADepth: integer);
 
@@ -505,8 +504,6 @@ resourcestring
   Res_AutoBackupInfo      = 'Auto Backup [ %dm | %s ]';
   Res_LangStrings         = 'af=Afrikaans|am=Amharic|ar=Arabic|ar_ae=Arabic(United Arab Emirates)|ar_bh=Arabic(Bahrain)|ar_dz=Arabic(Algeria)|ar_eg=Arabic(Egypt)|ar_iq=Arabic(Iraq)|ar_jo=Arabic(Jordan)|ar_kw=Arabic(Kuwait)|ar_lb=Arabic(Lebanon)|ar_ly=Arabic(Libya)|ar_ma=Arabic(Morocco)|ar_om=Arabic(Oman)|ar_qa=Arabic(Qatar)|ar_sa=Arabic(Saudi Arabia)|ar_sy=Arabic(Syria)|ar_tn=Arabic(Tunisia)|ar_ye=Arabic(Yemen)|as=Assamese|az=Azeri|az_az=Azeri(Cyrillic)|be=Belarusian|bg=Bulgarian|bn=Bengali|bo=Tibetan|bs=Bosnian|ca=Catalan|cs=Czech|cy=Welsh|da=Danish|de=German|de_at=German(Austria)|de_ch=German(Switzerland)|de_de=German(Germany)|de_li=German(Liechtenstein)|de_lu=German(Luxembourg)|dv=Maldivian|el=Greek|en=English|en_au=English(Australia)|en_bz=English(Belize)|en_ca=English(Canada)|en_cb=English(Caribbean)|en_gb=English(Great Britain)|en_ie=English(Ireland)|en_in=English(India)|en_jm=English(Jamaica)|en_nz=English(New Zealand)|en_ph=English(Philippines)|en_tt=English(Trinidad)|en_us=English(United States)|en_za=English(Southern Africa)|es=Spanish|es_ar=Spanish(Argentina)|es_bo=Spanish(Bolivia)|es_cl=Spanish(Chile)|es_co=Spanish(Colombia)|es_cr=Spanish(Costa Rica)|es_do=Spanish(Dominican Republic)|es_ec=Spanish(Ecuador)|es_es=Spanish(Traditional)|es_gt=Spanish(Guatemala)|es_hn=Spanish(Honduras)|es_mx=Spanish(Mexico)|es_ni=Spanish(Nicaragua)|es_pa=Spanish(Panama)|es_pe=Spanish(Peru)|es_pr=Spanish(Puerto Rico)|es_py=Spanish(Paraguay)|es_sv=Spanish(ElSalvador)|es_uy=Spanish(Uruguay)|es_ve=Spanish(Venezuela)|et=Estonian|eu=Basque|fa=Farsi|fi=Finnish|fo=Faroese|fr=French|fr_be=French(Belgium)|fr_ca=French(Canada)|fr_ch=French(Switzerland)|fr_fr=French(France)|fr_lu=French(Luxembourg)|ga=Irish|gd=Gaelic(Scotland)|gd_ie=Gaelic(Ireland)|gl=Galician|gn=Guarani(Paraguay)|gu=Gujarati|he=Hebrew|hi=Hindi|hr=Croatian|hu=Hungarian|hy=Armenian|id=Indonesian|is=Icelandic|it=Italian|it_ch=Italian(Switzerland)|it_it=Italian(Italy)|ja=Japanese|ka=Georgian|kk=Kazakh|km=Khmer|kn=Kannada|ko=Korean|ks=Kashmiri|la=Latin|lo=Lao|lt=Lithuanian|lv=Latvian|mi=Maori|mk=FYRO Macedonia|ml=Malayalam|mn=Mongolian|mr=Marathi|ms=Malay|ms_bn=Malay(Brunei)|ms_my=Malay(Malaysia)|mt=Maltese|my=Burmese|nb=Norwegian(Bokml)|ne=Nepali|nl=Dutch|nl_be=Dutch(Belgium)|nl_nl=Dutch(Netherlands)|no=Norwegian|or=Oriya|pa=Punjabi|pl=Polish|pt=Portuguese|pt_br=Portuguese(Brazil)|pt_pt=Portuguese(Portugal)|rm=Raeto(Romance)|ro=Romanian|ro_mo=Romanian(Moldova)|ru=Russian|ru_mo=Russian(Moldova)|sa=Sanskrit|sb=Sorbian|sd=Sindhi|si=Sinhalese|sk=Slovak|sl=Slovenian|so=Somali|sq=Albanian|sr=Serbian(Latin)|sr_sp=Serbian(Cyrillic)|sv=Swedish|sv_fi=Swedish(Finland)|sv_se=Swedish(Sweden)|sw=Swahili|sz=Sami(lappish)|ta=Tamil|te=Telugu|tg=Tajik|th=Thai|tk=Turkmen|tn=Setswana|tr=Turkish|ts=Tsonga|tt=Tatar|uk=Ukrainian|ur=Urdu|uz=Uzbek(Latin)|uz_uz=Uzbek(Cyrillic)|ve=Venda|vi=Vietnamese|xh=Xhosa|yi=Yiddish|zh=Chinese|zh_cn=Chinese(China)|zh_hk=Chinese(Hong Kong SAR)|zh_mo=Chinese(Macau SAR)|zh_sg=Chinese(Singapore)|zh_tw=Chinese(Taiwan)|zu=Zulu';
 
-  function IsKeyDown(AKey: integer): boolean; inline;
-  function TrimSpace(Str: string): string; inline;
   function GetInitDir: string;
 
 implementation
@@ -581,6 +578,8 @@ begin
   LoadLastFile;
 
   UpdateDBControlState;
+
+  UpdateCaption(False);
 end;
 
 procedure TformMain.FormClose(Sender: TObject; var CloseAction: TCloseAction);
@@ -1193,7 +1192,7 @@ end;
 
 procedure TformMain.lstbInfoDblClick(Sender: TObject);
 var
-  SearchRecord: TSearchRecord;
+  PSR: PSearchRecord;
   FixNum: Integer;
   Str: string;
 begin
@@ -1201,23 +1200,23 @@ begin
 
   FFocusNote := True;
 
-  SearchRecord := SearchResult[lstbInfo.ItemIndex];
+  PSR := SearchResult[lstbInfo.ItemIndex];
 
-  SelectNodeByID(SearchRecord.ID);
+  SelectNodeByID(PSR^.ID);
 
-  if SearchRecord.Start + memoNote.SelLength > 0 then
+  if PSR^.UStart + memoNote.SelLength > 0 then
   begin
     // 本程序使用的默认换行符是 #10，而 Windows 中的 TMemo 使用的换行符
     // 是 #13#10，长度不同，所以需要修补才能得到正确的 SelStart
     FixNum := 0;
     if Length(LineEnding) > 1 then begin
-      Str := FTreeDB.GetNote(SearchRecord.ID);
-      Str := UTF8Copy(Str, 1, SearchRecord.Start);
+      Str := FTreeDB.GetNote(PSR^.ID);
+      Str := UTF8Copy(Str, 1, PSR^.UStart);
       FixNum := Str.CountChar(#10);
     end;
 
-    memoNote.SelStart := SearchRecord.Start - 1 + FixNum;
-    memoNote.SelLength := SearchRecord.Length;
+    memoNote.SelStart := PSR^.UStart - 1 + FixNum;
+    memoNote.SelLength := PSR^.ULength;
   end;
 end;
 
@@ -1507,7 +1506,7 @@ end;
 procedure TformMain.SubmitNote;
 begin
   if FNoteChanged and (FLastNode <> nil) then
-    FTreeDB.SetNote(GetNodeID(FLastNode), memoNote.Text);
+    FTreeDB.SetNote(GetNodeID(FLastNode), ToLF(memoNote.Text)); // Clear #13
 
   FNoteChanged := False;
 end;
@@ -1561,10 +1560,7 @@ end;
 
 procedure TformMain.StripTailSpace;
 var
-  i: integer;
-  Str: String;
   APrevText: string;
-  AChanged: boolean;
 begin
   if FLastNode = nil then Exit;
 
@@ -1573,7 +1569,6 @@ begin
   memoNote.Lines.BeginUpdate;
   FMemoHistory.Enabled := False;
 
-  AChanged := False;
   memoNote.Text := ReplaceRegExpr('(?m)[ 　\t]+$', memoNote.Text, '', False);
 
   FMemoHistory.Enabled := True;
@@ -2778,7 +2773,7 @@ var
   begin
     Result := False;
     AContent := UTF8Copy(ANote, AStart, ALength);
-    if TrimSpace(AContent) = '' then Exit;
+    if UTF8TrimSpace(AContent) = '' then Exit;
 
     if TitlePattern = '' then
       ATitle := Res_UnnamedNode
@@ -3009,7 +3004,7 @@ end;
 procedure TformMain.LoadSearchResult(UpdateHistory: boolean);
 var
   i: integer;
-  SRec: TSearchRecord;
+  PSR: PSearchRecord;
   AName, ANote, Sample: string;
   ANode: TTreeNode;
   AHistory: THistory;
@@ -3019,29 +3014,29 @@ begin
   lstbInfo.Clear;
   LastID := 0;
   for i := 0 to SearchResult.Count - 1 do begin
-    SRec := SearchResult[i];
-    AName := FTreeDB.GetName(SRec.ID);
+    PSR := SearchResult[i];
+    AName := FTreeDB.GetName(PSR^.ID);
 
-    if SRec.Start + SRec.Length = 0 then // 搜索结果在节点名称中
+    if PSR^.UStart + PSR^.ULength = 0 then // 搜索结果在节点名称中
       lstbInfo.Items.Add(Format('[%s]', [AName]))
     else begin                           // 搜索结果在节点内容中
-      ANote := FTreeDB.GetNote(SRec.ID);
+      ANote := FTreeDB.GetNote(PSR^.ID);
 
-      if SRec.Start < 10 then
-        Sample := UTF8Copy(ANote, 1, SRec.Length + 10)
+      if PSR^.UStart < 10 then
+        Sample := UTF8Copy(ANote, 1, PSR^.ULength + 10)
       else
-        Sample := UTF8Copy(ANote, SRec.Start - 10, SRec.Length + 20);
+        Sample := UTF8Copy(ANote, PSR^.UStart - 10, PSR^.ULength + 20);
       Sample := Sample.Replace(#10, ' ');
 
-      lstbInfo.Items.Add(Format('[%s] %s | (%d %d)', [AName, Sample, SRec.Start, SRec.Length]));
+      lstbInfo.Items.Add(Format('[%s] %s | (%d %d)', [AName, Sample, PSR^.UStart, PSR^.ULength]));
 
       // 由于数据发生了完全的改变，历史记录不再有效，所以需要销毁相应的历史记录
-      if UpdateHistory and (LastID <> SRec.ID) then begin
-        LastID := SRec.ID;
+      if UpdateHistory and (LastID <> PSR^.ID) then begin
+        LastID := PSR^.ID;
 
         ANode := IDToNode(LastID, False);
 
-        if ANode <> nil then begin
+        if (ANode <> nil) and (ANode <> FLastNode) then begin
           AHistory := GetNodeHistory(ANode);
 
           if AHistory <> nil then begin
@@ -3064,24 +3059,24 @@ end;
 procedure TformMain.ReLoadNodeName;
 var
   i: integer;
-  SRec: TSearchRecord;
+  PSR: PSearchRecord;
   Node: TTreeNode;
 begin
   trevTree.BeginUpdate;
 
   for i := 0 to SearchResult.Count - 1 do begin
-    SRec := SearchResult[i];
-    Node := IDToNode(SRec.ID, False);
+    PSR := SearchResult[i];
+    Node := IDToNode(PSR^.ID, False);
 
     // 只修改已经加载的节点
     if Node <> nil then
-      Node.Text := FTreeDB.GetName(SRec.ID);
+      Node.Text := FTreeDB.GetName(PSR^.ID);
   end;
 
   trevTree.EndUpdate;
 end;
 
-procedure TformMain.Search(ANode: TTreeNode; AText: string; IncludeName, IncludeNote: boolean; ADepth: integer);
+procedure TformMain.Search(ANode: TTreeNode; AText: string; IncludeName, IncludeNote: boolean; ADepth: integer; IgnoreCase: boolean);
 var
   ID: integer;
 begin
@@ -3090,11 +3085,11 @@ begin
   ID := GetNodeID(ANode, RootID);
 
   SearchResult.Clear;
-  FTreeDB.Search(ID, AText, IncludeName, IncludeNote, ADepth, SearchResult);
+  FTreeDB.Search(ID, AText, IncludeName, IncludeNote, ADepth, IgnoreCase, SearchResult);
   LoadSearchResult(False);
 end;
 
-procedure TformMain.Replace(ANode: TTreeNode; AFrom, ATo: string; IncludeName, IncludeNote: boolean; ADepth: integer);
+procedure TformMain.Replace(ANode: TTreeNode; AFrom, ATo: string; IncludeName, IncludeNote: boolean; ADepth: integer; IgnoreCase: boolean);
 var
   ID: integer;
   APrevText: String;
@@ -3104,7 +3099,7 @@ begin
   ID := GetNodeID(ANode, RootID);
 
   SearchResult.Clear;
-  FTreeDB.Replace(ID, AFrom, ATo, IncludeName, IncludeNote, ADepth, SearchResult);
+  FTreeDB.Replace(ID, AFrom, ATo, IncludeName, IncludeNote, ADepth, IgnoreCase, SearchResult);
   LoadSearchResult(True);
 
   if SearchResult.Count > 0 then begin
@@ -3271,16 +3266,6 @@ var
 begin
   ID := GetNodeID(Node, RootID);
   Result := FTreeDB.ExportToDB(ID, RootID, ToPath, Depth);
-end;
-
-function IsKeyDown(AKey: integer): boolean; inline;
-begin
-  Result := GetKeyState(AKey) < 0;
-end;
-
-function TrimSpace(Str: string): string; inline;
-begin
-  Result := Str.Trim([' ', '　', #9, #13, #10]);
 end;
 
 end.
