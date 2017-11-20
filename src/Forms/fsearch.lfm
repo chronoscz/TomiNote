@@ -1,11 +1,11 @@
 object formSearch: TformSearch
   Left = 435
-  Height = 420
+  Height = 458
   Top = 155
   Width = 300
   AutoSize = True
   Caption = 'Search'
-  ClientHeight = 420
+  ClientHeight = 458
   ClientWidth = 300
   DefaultMonitor = dmMainForm
   FormStyle = fsStayOnTop
@@ -54,7 +54,7 @@ object formSearch: TformSearch
     AnchorSideBottom.Side = asrBottom
     Left = 16
     Height = 40
-    Top = 372
+    Top = 410
     Width = 100
     Anchors = [akLeft, akBottom]
     AutoSize = True
@@ -72,7 +72,7 @@ object formSearch: TformSearch
     AnchorSideBottom.Side = asrBottom
     Left = 184
     Height = 40
-    Top = 372
+    Top = 410
     Width = 100
     Anchors = [akRight, akBottom]
     AutoSize = True
@@ -84,6 +84,7 @@ object formSearch: TformSearch
     TabOrder = 8
   end
   object chkbSearchName: TCheckBox
+    AnchorSideLeft.Control = Owner
     AnchorSideTop.Control = combReplace
     AnchorSideTop.Side = asrBottom
     AnchorSideRight.Control = Owner
@@ -93,6 +94,7 @@ object formSearch: TformSearch
     Top = 216
     Width = 284
     Anchors = [akTop, akLeft, akRight]
+    BorderSpacing.Left = 8
     BorderSpacing.Top = 6
     BorderSpacing.Right = 8
     Caption = 'Search in node name'
@@ -131,20 +133,20 @@ object formSearch: TformSearch
   end
   object chkbUseRegexpr: TCheckBox
     AnchorSideLeft.Control = Owner
-    AnchorSideTop.Control = chkbSearchNote
+    AnchorSideTop.Control = chkbIgnoreCase
     AnchorSideTop.Side = asrBottom
     AnchorSideRight.Control = Owner
     AnchorSideRight.Side = asrBottom
     Left = 8
     Height = 30
-    Top = 288
+    Top = 328
     Width = 284
     Anchors = [akTop, akLeft, akRight]
     BorderSpacing.Left = 8
     BorderSpacing.Top = 6
     BorderSpacing.Right = 8
-    BorderSpacing.Bottom = 60
     Caption = 'Use regular expression'
+    OnChange = chkbUseRegexprChange
     TabOrder = 6
   end
   object combSearch: TComboBox
@@ -197,10 +199,54 @@ object formSearch: TformSearch
     AnchorSideBottom.Side = asrBottom
     Left = 116
     Height = 40
-    Top = 372
+    Top = 410
     Width = 68
     Anchors = [akTop, akLeft, akRight, akBottom]
     Constraints.MinWidth = 16
     ParentColor = False
+  end
+  object chkbMultiLine: TCheckBox
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = chkbUseRegexpr
+    AnchorSideTop.Side = asrBottom
+    Left = 8
+    Height = 22
+    Top = 364
+    Width = 22
+    BorderSpacing.Left = 8
+    BorderSpacing.Top = 6
+    BorderSpacing.Bottom = 60
+    TabOrder = 9
+  end
+  object chkbNonGreedy: TCheckBox
+    AnchorSideLeft.Control = chkbMultiLine
+    AnchorSideLeft.Side = asrBottom
+    AnchorSideTop.Control = chkbMultiLine
+    AnchorSideTop.Side = asrCenter
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    Left = 36
+    Height = 22
+    Top = 364
+    Width = 256
+    Anchors = [akTop, akLeft, akRight]
+    BorderSpacing.Left = 6
+    BorderSpacing.Right = 8
+    TabOrder = 10
+  end
+  object chkbIgnoreCase: TCheckBox
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = chkbSearchNote
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    Left = 8
+    Height = 22
+    Top = 300
+    Width = 292
+    Anchors = [akTop, akLeft, akRight]
+    BorderSpacing.Left = 8
+    BorderSpacing.Top = 18
+    TabOrder = 11
   end
 end
