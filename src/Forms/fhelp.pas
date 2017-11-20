@@ -45,6 +45,8 @@ resourcestring
     #10 +
     'The size of all windows in this program are adjustable, the font name and font size of all windows are also adjustable, if you are not satisfied with the default interface, you can manually adjust them, the adjusted state will be saved in the configuration file.'#10 +
     #10 +
+    'This program uses dynamic load node, when you open the database, it will not load all the nodes, only the first depth node is loaded, when you expand a node, it will load its next node, so you don''t have to worry about loading too much data too slow, but the count of nodes should not exceed 2147483640, which is determined by the type of integer used by the program, you can modify the source code to make it support more The number of nodes, but also consume more database space.'#10 +
+    #10 +
     #10 +
     #10 +
     '[Move Node]'#10 +
@@ -169,6 +171,8 @@ resourcestring
     #10 +
     'You can search for text in node name and node content. You can search for text in "Selected node" or "Selected node and its descendants" or "All nodes".'#10 +
     #10 +
+    'Carriage returns and newline characters in search content and replacements will be converted to \r \n, tabs will be converted to \t, backslashes will be converted to \\, and if the search content or replacement contains With \r \n \t \\, the backslash in these symbols will not be converted.'#10 +
+    #10 +
     'The search results will be listed in the InfoBar, which you can double-click to jump to the corresponding place of the search result.'#10 +
     #10 +
     'You can also replace text, replacement results will be listed in the InfoBar, you can use regular expressions in the replace operation.'#10 +
@@ -177,7 +181,7 @@ resourcestring
     #10 +
     'Note: Regular expressions support only characters within the range of Unicode UCS-2.'#10 +
     #10 +
-    'Note: The node that executed the replacement operation will lose its history.'#10 +
+    'Note: The nodes that executed the multi-node replace operation will lose their history.'#10 +
     #10 +
     #10 +
     #10 +
