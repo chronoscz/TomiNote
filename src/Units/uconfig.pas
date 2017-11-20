@@ -46,7 +46,7 @@ type
     SearchFrom            : integer;
     SearchName            : boolean;
     SearchNote            : boolean;
-    SearchCaseSensitive   : boolean;
+    SearchIgnoreCase      : boolean;
     UseRegExpr            : boolean;
     SearchMultiLine       : boolean;
     SearchNonGreedy       : boolean;
@@ -91,7 +91,7 @@ type
 
     SeparatorText         : string;
     TitleText             : string;
-    SplitCaseSensitive    : boolean;
+    SplitIgnoreCase       : boolean;
     SplitMultiLine        : boolean;
     SplitNonGreedy        : boolean;
     IncludeSeparator      : boolean;
@@ -394,7 +394,7 @@ begin
     DoReplace             := IniFile.ReadBool   ('Search', 'DoReplace', False);
     SearchName            := IniFile.ReadBool   ('Search', 'SearchName', False);
     SearchNote            := IniFile.ReadBool   ('Search', 'SearchNote', True);
-    SearchCaseSensitive   := IniFile.ReadBool   ('Search', 'CaseSensitive', False);
+    SearchIgnoreCase      := IniFile.ReadBool   ('Search', 'IgnoreCase', True);
     UseRegExpr            := IniFile.ReadBool   ('Search', 'UseRegExpr', False);
     SearchMultiLine       := IniFile.ReadBool   ('Search', 'MultiLine', True);
     SearchNonGreedy       := IniFile.ReadBool   ('Search', 'NonGreedy', True);
@@ -459,7 +459,7 @@ begin
 
     SeparatorText         := IniFile.ReadString ('NodeUtils', 'SeparatorText', '');
     TitleText             := IniFile.ReadString ('NodeUtils', 'TitleText', '');
-    SplitCaseSensitive    := IniFile.ReadBool   ('NodeUtils', 'CaseSensitive', False);
+    SplitIgnoreCase       := IniFile.ReadBool   ('NodeUtils', 'IgnoreCase', True);
     SplitMultiLine        := IniFile.ReadBool   ('NodeUtils', 'MultiLine', True);
     SplitNonGreedy        := IniFile.ReadBool   ('NodeUtils', 'NonGreedy', True);
     IncludeSeparator      := IniFile.ReadBool   ('NodeUtils', 'IncludeSeparator', True);
@@ -625,7 +625,7 @@ begin
     IniFile.WriteBool   ('Search', 'DoReplace', DoReplace);
     IniFile.WriteBool   ('Search', 'SearchName', SearchName);
     IniFile.WriteBool   ('Search', 'SearchNote', SearchNote);
-    IniFile.WriteBool   ('Search', 'CaseSensitive', SearchCaseSensitive);
+    IniFile.WriteBool   ('Search', 'IgnoreCase', SearchIgnoreCase);
     IniFile.WriteBool   ('Search', 'UseRegExpr', UseRegExpr);
     IniFile.WriteBool   ('Search', 'MultiLine', SearchMultiLine);
     IniFile.WriteBool   ('Search', 'NonGreedy', SearchNonGreedy);
@@ -711,7 +711,7 @@ begin
         IniFile.WriteString('NodeUtils', 'RecentTitle' + IntToStr(i), '');
     end;
 
-    IniFile.WriteBool   ('NodeUtils', 'CaseSensitive', SplitCaseSensitive);
+    IniFile.WriteBool   ('NodeUtils', 'IgnoreCase', SplitIgnoreCase);
     IniFile.WriteBool   ('NodeUtils', 'MultiLine', SplitMultiLine);
     IniFile.WriteBool   ('NodeUtils', 'NonGreedy', SplitNonGreedy);
 
