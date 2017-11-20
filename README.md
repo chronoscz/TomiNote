@@ -14,6 +14,7 @@ TomiNote is a simple note collection tool that supports the following features:
 - 12, support adjust the user interface (full screen, full window)
 - 13, support custom font name and font size
 - 14, support custom foreground and background colors
+- 15, support dynamic load child nodes (load child nodes when expanding the node)
 
 
 For more features, please check the software help information, or [wiki](https://github.com/tomitomy/TomiNote/wiki)
@@ -46,6 +47,7 @@ TomiNote 是一个简单的笔记收集工具，它支持以下特性：
 - 12、支持自由调整用户界面（全屏、满窗）
 - 13、支持自定义字体名称和字体大小
 - 14、支持自定义前景色和背景色
+- 15、支持动态加载子节点（展开节点的时候载入子节点）
 
 更多功能请查看软件的帮助信息，或查看[维基帮助](https://github.com/tomitomy/TomiNote/wiki)
 
