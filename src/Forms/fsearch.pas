@@ -18,12 +18,16 @@ type
     combReplace        : TComboBox;
     chkbSearchName     : TCheckBox;
     chkbSearchNote     : TCheckBox;
+    chkbMultiLine      : TCheckBox;
     chkbUseRegexpr     : TCheckBox;
+    chkbNonGreedy      : TCheckBox;
+    chkbIgnoreCase     : TCheckBox;
 
     bttnSearch         : TButton;
     bttnCancel         : TButton;
     lablSpace          : TLabel;
 
+    procedure chkbUseRegexprChange(Sender: TObject);
     procedure combReplaceCloseUp(Sender: TObject);
     procedure combSearchCloseUp(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -46,7 +50,6 @@ type
 var
   formSearch: TformSearch;
 
-
 resourcestring
   Res_radgSearchFromItems = 'Search in selected node'#10'Search in selected branch'#10'Search in all nodes';
   Res_ScarchResultTip     = 'Found %d results';
@@ -55,7 +58,7 @@ resourcestring
 implementation
 
 uses
-  fmain, uconfig;
+  fmain, uconfig, ucommon;
 
 {$R *.lfm}
 
@@ -75,6 +78,9 @@ begin
 
   // 此资源需要手动载入
   radgSearchFrom.Items.Text := Res_radgSearchFromItems;
+  chkbIgnoreCase.Caption    := Res_IgnoreCase;
+  chkbMultiLine.Caption     := Res_MultiLine;
+  chkbNonGreedy.Caption     := Res_NonGreedy;
 
   // 初始化控件状态
   radgSearchFrom.ItemIndex   := Config.SearchFrom;
@@ -88,7 +94,11 @@ begin
 
   chkbSearchName.Checked     := Config.SearchName;
   chkbSearchNote.Checked     := Config.SearchNote;
+  chkbIgnoreCase.Checked     := Config.SearchCaseSensitive;
+  chkbUseRegexpr.Checked     := True; // 用来保证 chkbMultiLine 和 chkbNonGreedy 的状态正常
   chkbUseRegexpr.Checked     := Config.UseRegExpr;
+  chkbMultiLine.Checked      := Config.SearchMultiLine;
+  chkbNonGreedy.Checked      := Config.SearchNonGreedy;
 
   if Config.SwapOKCancel then begin
     bttnSearch.Caption       := Res_CaptionCancel;
@@ -111,21 +121,24 @@ end;
 procedure TformSearch.FormClose(Sender: TObject; var CloseAction: TCloseAction);
 begin
   // 保存窗口状态
-  Config.SearchFormRect := BoundsRect;
+  Config.SearchFormRect      := BoundsRect;
 
   // 保存控件状态
-  Config.SearchFrom  := radgSearchFrom.ItemIndex;
+  Config.SearchFrom          := radgSearchFrom.ItemIndex;
 
-  Config.DoReplace   := chkbDoReplace.Checked;
-  Config.SearchName  := chkbSearchName.Checked;
-  Config.SearchNote  := chkbSearchNote.Checked;
-  Config.UseRegExpr  := chkbUseRegexpr.Checked;
+  Config.DoReplace           := chkbDoReplace.Checked;
+  Config.SearchName          := chkbSearchName.Checked;
+  Config.SearchNote          := chkbSearchNote.Checked;
+  Config.SearchCaseSensitive := chkbIgnoreCase.Checked;
+  Config.UseRegExpr          := chkbUseRegexpr.Checked;
+  Config.SearchMultiLine     := chkbMultiLine.Checked;
+  Config.SearchNonGreedy     := chkbNonGreedy.Checked;
 
-  Config.SearchText  := string(combSearch.Text).Replace(#10, '\n', [rfReplaceAll]);
-  Config.ReplaceText := string(combReplace.Text).Replace(#10, '\n', [rfReplaceAll]);
+  Config.SearchText          := Escape(combSearch.Text);
+  Config.ReplaceText         := Escape(combReplace.Text);
 
   CloseAction := caFree;
-  formSearch := nil;
+  formSearch  := nil;
 end;
 
 procedure TformSearch.bttnSearchClick(Sender: TObject);
@@ -143,10 +156,19 @@ var
   Index: Integer;
   Node: TTreeNode;
   Depth: Integer;
+  IgnoreCase: boolean;
+  MultiLine: boolean;
+  NonGreedy: boolean;
+  HeadStr: string;
+  SearchStr: string;
 begin
   if (radgSearchFrom.ItemIndex <> 0) and chkbDoReplace.Checked and
     (Application.MessageBox(PChar(Res_SearchAllWarning), PChar(Caption), MB_YESNO + MB_ICONWARNING) <> IDYES) then
     Exit;
+
+  IgnoreCase := chkbIgnoreCase.Checked;
+  MultiLine  := chkbMultiLine.Enabled and chkbMultiLine.Checked;
+  NonGreedy  := chkbNonGreedy.Enabled and chkbNonGreedy.Checked;
 
   Hide;
 
@@ -154,7 +176,7 @@ begin
 
   // 保存搜索内容
   if combSearch.Text <> '' then begin
-    combSearch.Text := string(combSearch.Text).Replace(#10, '\n', [rfReplaceAll]);
+    combSearch.Text := Escape(combSearch.Text);
     Index := Config.RecentSearch.IndexOf(combSearch.Text);
     if Index >= 0 then
       Config.RecentSearch.Delete(Index)
@@ -166,7 +188,7 @@ begin
 
   // 保存替换内容
   if (combReplace.Text <> '') then begin
-    combReplace.Text := string(combReplace.Text).Replace(#10, '\n', [rfReplaceAll]);
+    combReplace.Text := Escape(combReplace.Text);
     Index := Config.RecentReplace.IndexOf(combReplace.Text);
     if Index >= 0 then
       Config.RecentReplace.Delete(Index)
@@ -174,6 +196,15 @@ begin
       Config.RecentReplace.Delete(Config.RecentReplace.Count - 1);
 
     Config.RecentReplace.Insert(0, combReplace.Text);
+  end;
+
+  SearchStr := combSearch.Text;
+  HeadStr := '';
+  if chkbUseRegExpr.Checked and (SearchStr <> '') then begin
+    if IgnoreCase then HeadStr := HeadStr + '(?i)'   else HeadStr := HeadStr + '(?-i)';
+    if MultiLine  then HeadStr := HeadStr + '(?m-s)' else HeadStr := HeadStr + '(?s-m)';
+    if NonGreedy  then HeadStr := HeadStr + '(?-g)'  else HeadStr := HeadStr + '(?g)';
+    SearchStr := HeadStr + SearchStr;
   end;
 
   // 执行搜索或替换
@@ -190,16 +221,16 @@ begin
     if chkbDoReplace.Checked then
     begin
       if chkbUseRegExpr.Checked then
-        RegReplace(Node, combSearch.Text, combReplace.Text, chkbSearchName.Checked, chkbSearchNote.Checked, Depth)
+        RegReplace(Node, SearchStr, combReplace.Text, chkbSearchName.Checked, chkbSearchNote.Checked, Depth)
       else
-        Replace(Node, combSearch.Text, combReplace.Text, chkbSearchName.Checked, chkbSearchNote.Checked, Depth);
+        Replace(Node, SearchStr, combReplace.Text, chkbSearchName.Checked, chkbSearchNote.Checked, Depth, IgnoreCase);
     end
     else
     begin
       if chkbUseRegExpr.Checked then
-        RegSearch(Node, combSearch.Text, chkbSearchName.Checked, chkbSearchNote.Checked, Depth)
+        RegSearch(Node, SearchStr, chkbSearchName.Checked, chkbSearchNote.Checked, Depth)
       else
-        Search(Node, combSearch.Text, chkbSearchName.Checked, chkbSearchNote.Checked, Depth);
+        Search(Node, SearchStr, chkbSearchName.Checked, chkbSearchNote.Checked, Depth, IgnoreCase);
     end;
 
     Config.InfoBarVisible := True;
@@ -274,6 +305,12 @@ begin
     Config.RecentReplace.Delete(combReplace.ItemIndex);
     combReplace.Items.Delete(combReplace.ItemIndex);
   end;
+end;
+
+procedure TformSearch.chkbUseRegexprChange(Sender: TObject);
+begin
+  chkbMultiLine.Enabled := chkbUseRegexpr.Checked;
+  chkbNonGreedy.Enabled := chkbUseRegexpr.Checked;
 end;
 
 end.
