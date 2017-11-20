@@ -12,24 +12,27 @@ type
   { TformNodeUtils }
 
   TformNodeUtils = class(TForm)
-    pgctMain: TPageControl;
-    tabsSplit: TTabSheet;
-    lablSeparator: TLabel;
-    lablTitle: TLabel;
-    combSeparator: TComboBox;
-    combTitle: TComboBox;
-    chkbIncludeSeparator: TCheckBox;
-    chkbAddPreNum: TCheckBox;
-    chkbAddSufNum: TCheckBox;
-    editPreNumLen: TEdit;
-    editSufNumLen: TEdit;
+    chkbNonGreedy        : TCheckBox;
+    chkbMultiLine        : TCheckBox;
+    chkbIgnoreCase       : TCheckBox;
+    pgctMain             : TPageControl;
+    tabsSplit            : TTabSheet;
+    lablSeparator        : TLabel;
+    lablTitle            : TLabel;
+    combSeparator        : TComboBox;
+    combTitle            : TComboBox;
+    chkbIncludeSeparator : TCheckBox;
+    chkbAddPreNum        : TCheckBox;
+    chkbAddSufNum        : TCheckBox;
+    editPreNumLen        : TEdit;
+    editSufNumLen        : TEdit;
 
-    tabsSort: TTabSheet;
-    radgSortDirection: TRadioGroup;
-    radgSortOf: TRadioGroup;
+    tabsSort             : TTabSheet;
+    radgSortDirection    : TRadioGroup;
+    radgSortOf           : TRadioGroup;
 
-    bttnOK: TButton;
-    bttnCancel: TButton;
+    bttnOK               : TButton;
+    bttnCancel           : TButton;
 
     procedure bttnCancelClick(Sender: TObject);
     procedure bttnOKClick(Sender: TObject);
@@ -43,7 +46,6 @@ type
     procedure OKEvent;
     procedure PerformSplit;
     procedure PerformSort;
-
   public
 
   end;
@@ -53,12 +55,12 @@ var
 
 resourcestring
   Res_SortDirection = 'Ascending'#10'Descending';
-  Res_SortOf = 'Sibling'#10'Children';
+  Res_SortOf        = 'Sibling'#10'Children';
 
 implementation
 
 uses
-  fmain, uconfig;
+  fmain, uconfig, ucommon;
 
 {$R *.lfm}
 
@@ -79,6 +81,9 @@ begin
   // 这些资源需要手动载入
   radgSortDirection.Items.Text  := Res_SortDirection;
   radgSortOf.Items.Text         := Res_SortOf;
+  chkbIgnoreCase.Caption        := Res_IgnoreCase;
+  chkbMultiLine.Caption         := Res_MultiLine;
+  chkbNonGreedy.Caption         := Res_NonGreedy;
 
   // 初始化控件状态
   pgctMain.ActivePageIndex      := 0;
@@ -88,6 +93,10 @@ begin
 
   combSeparator.Text            := Config.SeparatorText;
   combTitle.Text                := Config.TitleText;
+
+  chkbIgnoreCase.Checked        := Config.SplitCaseSensitive;
+  chkbMultiLine.Checked         := Config.SplitMultiLine;
+  chkbNonGreedy.Checked         := Config.SplitNonGreedy;
 
   chkbIncludeSeparator.Checked  := Config.IncludeSeparator;
 
@@ -120,12 +129,16 @@ begin
   // 保存窗口状态
   Config.NodeUtilsFormRect      := BoundsRect;
 
-  combSeparator.Text := string(combSeparator.Text).Replace(#10, '\n', [rfReplaceAll]);
-  combTitle.Text := string(combTitle.Text).Replace(#10, '\n', [rfReplaceAll]);
+  combSeparator.Text            := Escape(combSeparator.Text);
+  combTitle.Text                := Escape(combTitle.Text);
 
   // 保存控件状态
   Config.SeparatorText          := combSeparator.Text;
   Config.TitleText              := combTitle.Text;
+
+  Config.SplitCaseSensitive     := chkbIgnoreCase.Checked;
+  Config.SplitMultiLine         := chkbMultiLine.Checked;
+  Config.SplitNonGreedy         := chkbNonGreedy.Checked;
 
   Config.IncludeSeparator       := chkbIncludeSeparator.Checked;
 
@@ -178,7 +191,7 @@ begin
 
   // 保存分隔符文本
   if combSeparator.Text <> '' then begin
-    combSeparator.Text := string(combSeparator.Text).Replace(#10, '\n', [rfReplaceAll]);
+    combSeparator.Text := Escape(combSeparator.Text);
     Index := Config.RecentSeparator.IndexOf(combSeparator.Text);
     if Index >= 0 then
       Config.RecentSeparator.Delete(Index)
@@ -190,7 +203,7 @@ begin
 
   // 保存标题文本
   if combTitle.Text <> '' then begin
-    combTitle.Text := string(combTitle.Text).Replace(#10, '\n', [rfReplaceAll]);
+    combTitle.Text := Escape(combTitle.Text);
     Index := Config.RecentTitle.IndexOf(combTitle.Text);
     if Index >= 0 then
       Config.RecentTitle.Delete(Index)
@@ -214,13 +227,22 @@ end;
 
 procedure TformNodeUtils.PerformSplit;
 var
-  SplitterPattern, TitlePattern: string;
-  AChecked: Boolean;
+  HeadStr, SeparatorPattern, TitlePattern: string;
+  IncludeSeparator: boolean;
   PreNumLen, SufNumLen: integer;
 begin
-  SplitterPattern := combSeparator.Text;
-  TitlePattern    := combTitle.Text;
-  AChecked        := chkbIncludeSeparator.Checked;
+  HeadStr := '';
+  if chkbIgnoreCase.Checked    then HeadStr := HeadStr + '(?i)'   else HeadStr := HeadStr + '(?-i)';
+  if chkbMultiLine.Checked     then HeadStr := HeadStr + '(?m-s)' else HeadStr := HeadStr + '(?s-m)';
+  if chkbNonGreedy.Checked     then HeadStr := HeadStr + '(?-g)'  else HeadStr := HeadStr + '(?g)';
+
+  SeparatorPattern := combSeparator.Text;
+  if SeparatorPattern <> '' then SeparatorPattern := HeadStr + SeparatorPattern;
+
+  TitlePattern     := combTitle.Text;
+  if TitlePattern <> '' then TitlePattern := HeadStr + TitlePattern;
+
+  IncludeSeparator := chkbIncludeSeparator.Checked;
 
   if chkbAddPreNum.Checked then
     PreNumLen := StrToIntDef(editPreNumLen.Text, 0)
@@ -232,7 +254,7 @@ begin
   else
     SufNumLen := 0;
 
-  formMain.SplitNote(SplitterPattern, TitlePattern, AChecked, PreNumLen, SufNumLen);
+  formMain.SplitNote(SeparatorPattern, TitlePattern, IncludeSeparator, PreNumLen, SufNumLen);
 end;
 
 procedure TformNodeUtils.PerformSort;
