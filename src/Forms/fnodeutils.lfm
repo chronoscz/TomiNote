@@ -122,7 +122,7 @@ object formNodeUtils: TformNodeUtils
         AnchorSideRight.Control = editPreNumLen
         Left = 6
         Height = 30
-        Top = 134
+        Top = 174
         Width = 492
         Anchors = [akTop, akLeft, akRight]
         BorderSpacing.Left = 6
@@ -137,7 +137,7 @@ object formNodeUtils: TformNodeUtils
         AnchorSideRight.Side = asrBottom
         Left = 504
         Height = 38
-        Top = 130
+        Top = 170
         Width = 80
         Anchors = [akTop, akRight]
         BorderSpacing.Top = 6
@@ -184,7 +184,7 @@ object formNodeUtils: TformNodeUtils
         AnchorSideRight.Control = editSufNumLen
         Left = 6
         Height = 30
-        Top = 174
+        Top = 214
         Width = 492
         Anchors = [akTop, akLeft, akRight]
         BorderSpacing.Left = 6
@@ -199,7 +199,7 @@ object formNodeUtils: TformNodeUtils
         AnchorSideRight.Side = asrBottom
         Left = 504
         Height = 38
-        Top = 170
+        Top = 210
         Width = 80
         Anchors = [akTop, akRight]
         BorderSpacing.Top = 2
@@ -228,20 +228,60 @@ object formNodeUtils: TformNodeUtils
       end
       object chkbIncludeSeparator: TCheckBox
         AnchorSideLeft.Control = tabsSplit
-        AnchorSideTop.Control = combTitle
+        AnchorSideTop.Control = chkbIgnoreCase
         AnchorSideTop.Side = asrBottom
         AnchorSideRight.Control = tabsSplit
         AnchorSideRight.Side = asrBottom
         Left = 6
         Height = 30
-        Top = 94
+        Top = 134
         Width = 578
         Anchors = [akTop, akLeft, akRight]
         BorderSpacing.Left = 6
-        BorderSpacing.Top = 6
+        BorderSpacing.Top = 18
         BorderSpacing.Right = 6
         Caption = 'Include Separator'
         TabOrder = 6
+      end
+      object chkbIgnoreCase: TCheckBox
+        AnchorSideLeft.Control = tabsSplit
+        AnchorSideTop.Control = combTitle
+        AnchorSideTop.Side = asrBottom
+        Left = 6
+        Height = 22
+        Top = 94
+        Width = 22
+        BorderSpacing.Left = 6
+        BorderSpacing.Top = 6
+        TabOrder = 7
+      end
+      object chkbMultiLine: TCheckBox
+        AnchorSideLeft.Control = chkbIgnoreCase
+        AnchorSideLeft.Side = asrBottom
+        AnchorSideTop.Control = chkbIgnoreCase
+        AnchorSideTop.Side = asrCenter
+        Left = 34
+        Height = 22
+        Top = 94
+        Width = 22
+        BorderSpacing.Left = 6
+        TabOrder = 8
+      end
+      object chkbNonGreedy: TCheckBox
+        AnchorSideLeft.Control = chkbMultiLine
+        AnchorSideLeft.Side = asrBottom
+        AnchorSideTop.Control = chkbIgnoreCase
+        AnchorSideTop.Side = asrCenter
+        AnchorSideRight.Control = tabsSplit
+        AnchorSideRight.Side = asrBottom
+        Left = 62
+        Height = 22
+        Top = 94
+        Width = 522
+        Anchors = [akTop, akLeft, akRight]
+        BorderSpacing.Left = 6
+        BorderSpacing.Right = 6
+        TabOrder = 9
       end
     end
   end
