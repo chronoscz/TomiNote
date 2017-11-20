@@ -5,7 +5,7 @@ unit utreedb;
 interface
 
 uses
-  Classes, SysUtils, sqlite3dyn, sqlite3conn, sqldb, LazUTF8, RegExpr, IniFiles, FileUtil;
+  Classes, SysUtils, sqlite3dyn, sqlite3conn, sqldb, LazUTF8, RegExpr, IniFiles, FileUtil, ucommon;
 
 type
 
@@ -18,33 +18,6 @@ type
     naInsert,
     naInsertBehind
     );
-
-  PSearchRecord = ^TSearchRecord;
-
-  TSearchRecord = record
-    ID: integer;
-    Start: integer;
-    Length: integer;
-  end;
-
-  { TSearchResult }
-
-  PSearchResult = ^TSearchResult;
-
-  TSearchResult = class
-  private
-    FList: TList;
-    function Get(Index: integer): TSearchRecord;
-    procedure Put(Index: integer; Item: TSearchRecord);
-  public
-    constructor Create;
-    destructor Destroy; override;
-    procedure Add(ID, Start, Length: integer);
-    procedure Del(Index: integer);
-    procedure Clear;
-    function Count: integer;
-    property Items[Index: integer]: TSearchRecord read Get write Put; default;
-  end;
 
   { TBackupThread }
 
@@ -61,7 +34,7 @@ type
 
   TDBConfig = class(TObject)
     DatabaseVersion: string;
-    LastNodeID: integer;
+    LastNodeID: Integer;
     AutoBackupRemaining: integer;
     ChangedAfterBackup: boolean;
     public
@@ -88,14 +61,14 @@ type
     function  TableExists(TableName: string): boolean;
     procedure InitTable;
     // 从储备库(rowid=3)中取出一个节点重新使用
-    function  ReuseNode: integer;
+    function  ReuseNode: Integer;
     // 向数据库中添加一个节点
-    function  CreateNewNode(Name, Note: string): integer;
+    function  CreateNewNode(Name, Note: string): Integer;
     // 将一个节点从树上脱离
-    procedure DetachNode(ID: integer);
+    procedure DetachNode(ID: Integer);
     // 将一个节点停靠在树上
-    procedure AttachNode(ID: integer; ToID: integer; mode: TAttachMode);
-    procedure SetParent(ID: integer; ParentID: integer);
+    procedure AttachNode(ID: Integer; ToID: Integer; mode: TAttachMode);
+    procedure SetParent(ID: Integer; ParentID: Integer);
 
     procedure DataChanged(AChanged: boolean);
     procedure ActiveChanged(AActive: boolean);
@@ -110,39 +83,39 @@ type
     function  BackupDB(BackupDir: string; Count: integer): boolean;
 
     // 基本读写
-    function  AddNode(Name, Note: string; ToID: integer; mode: TAttachMode): integer;
-    procedure DelNode(ID: integer);
-    procedure RecycleNode(ID: integer);
+    function  AddNode(Name, Note: string; ToID: Integer; mode: TAttachMode): Integer;
+    procedure DelNode(ID: Integer);
+    procedure RecycleNode(ID: Integer);
     procedure EmptyRecycler;
-    procedure MoveNode(FromID, ToID: integer; Mode: TAttachMode);
-    procedure UpDownNode(ID: integer; Up: boolean);
-    function  CopyNode(FromID, ToID: integer; Mode: TAttachMode): integer;
-    function  GetParent(ID: integer): integer;
-    function  GetChildren(ID: integer): TBoundArray;
-    procedure SetChildren(ID: integer; Children: TBoundArray);
-    function  GetName(ID: integer): string;
-    procedure SetName(ID: integer; Name: string);
-    function  GetNote(ID: integer): string;
-    procedure SetNote(ID: integer; Note: string);
+    procedure MoveNode(FromID, ToID: Integer; Mode: TAttachMode);
+    procedure UpDownNode(ID: Integer; Up: boolean);
+    function  CopyNode(FromID, ToID: Integer; Mode: TAttachMode): Integer;
+    function  GetParent(ID: Integer): Integer;
+    function  GetChildren(ID: Integer): TBoundArray;
+    procedure SetChildren(ID: Integer; Children: TBoundArray);
+    function  GetName(ID: Integer): string;
+    procedure SetName(ID: Integer; Name: string);
+    function  GetNote(ID: Integer): string;
+    procedure SetNote(ID: Integer; Note: string);
 
     // 导入和导出
-    function  ImportFile(FileName: string; IncludeExt: boolean; ToID: integer; mode: TAttachMode): integer;
+    function  ImportFile(FileName: string; IncludeExt: boolean; ToID: Integer; mode: TAttachMode): Integer;
     function  ImportDir(FromDir: string; IncludeRoot: boolean; IncludeExt: boolean;
-      ToID: integer; mode: TAttachMode): integer;
-    function  ImportDB(FromDBFile: string; FromID, ToID: integer; mode: TAttachMode): integer;
+      ToID: Integer; mode: TAttachMode): Integer;
+    function  ImportDB(FromDBFile: string; FromID, ToID: Integer; mode: TAttachMode): Integer;
 
-    procedure ExportToDir(ID: integer; ToDir: string; Ext: string; Depth: integer);
-    procedure ExportToFile(ID: integer; ToFile, Splitter: string; Depth: integer);
-    function  ExportToDB(ID, ToID: integer; ToDBFile: string; Depth: integer): boolean;
+    procedure ExportToDir(ID: Integer; ToDir: string; Ext: string; Depth: integer);
+    procedure ExportToFile(ID: Integer; ToFile, Splitter: string; Depth: integer);
+    function  ExportToDB(ID, ToID: Integer; ToDBFile: string; Depth: integer): boolean;
 
     // 搜索和替换
-    procedure Search(ID: integer; ASearchText: string; IncludeName, IncludeNote: boolean;
+    procedure Search(ID: Integer; ASearchText: string; IncludeName, IncludeNote: boolean;
+      Depth: integer; IgnoreCase: boolean; var Rst: TSearchResult);
+    procedure Replace(ID: Integer; ASearchText, AReplaceText: string; IncludeName, IncludeNote: boolean;
+      Depth: integer; IgnoreCase: boolean; var Rst: TSearchResult);
+    procedure RegSearch(ID: Integer; ASearchText: string; IncludeName, IncludeNote: boolean;
       Depth: integer; var Rst: TSearchResult);
-    procedure Replace(ID: integer; ASearchText, AReplaceText: string; IncludeName, IncludeNote: boolean;
-      Depth: integer; var Rst: TSearchResult);
-    procedure RegSearch(ID: integer; ASearchText: string; IncludeName, IncludeNote: boolean;
-      Depth: integer; var Rst: TSearchResult);
-    procedure RegReplace(ID: integer; ASearchText, AReplaceText: string; IncludeName, IncludeNote: boolean;
+    procedure RegReplace(ID: Integer; ASearchText, AReplaceText: string; IncludeName, IncludeNote: boolean;
       Depth: integer; var Rst: TSearchResult);
 
     // 属性
@@ -178,14 +151,6 @@ const
 
   // 在导出节点时，如果一个节点含有子节点，则将其内容保存在指定名称的文件中
   DirNode = '$DirectoryNode$';
-
-  function  ToLineEnding(Str: string): string;
-  function  ToLF(Str: string): string;
-
-  function  ReadFile(FileName: string): string;
-  procedure WriteFile(FileName: string; Text: string);
-
-  procedure FindFiles(APath: string; Rst: TStringList);
 
 implementation
 
@@ -262,63 +227,6 @@ begin
   finally
     AStream.Free;
   end;
-end;
-
-{ TSearchResult }
-
-constructor TSearchResult.Create;
-begin
-  inherited Create;
-  FList := TList.Create;
-end;
-
-destructor TSearchResult.Destroy;
-begin
-  Clear;
-  FList.Free;
-  inherited Destroy;
-end;
-
-function TSearchResult.Get(Index: integer): TSearchRecord;
-begin
-  Result := PSearchRecord(FList.Items[Index])^;
-end;
-
-procedure TSearchResult.Put(Index: integer; Item: TSearchRecord);
-begin
-  PSearchRecord(FList.Items[Index])^ := Item;
-end;
-
-procedure TSearchResult.Add(ID, Start, Length: integer);
-var
-  SRec: PSearchRecord;
-begin
-  SRec := new(PSearchRecord);
-  SRec^.ID := ID;
-  SRec^.Start := Start;
-  SRec^.Length := Length;
-
-  FList.Add(SRec);
-end;
-
-procedure TSearchResult.Del(Index: integer);
-begin
-  dispose(PSearchRecord(FList.Items[Index]));
-  FList.Delete(Index);
-end;
-
-function TSearchResult.Count: integer;
-begin
-  Result := FList.Count;
-end;
-
-procedure TSearchResult.Clear;
-var
-  i: integer;
-begin
-  for i := FList.Count - 1 downto 0 do
-    dispose(PSearchRecord(FList.Items[i]));
-  FList.Clear;
 end;
 
 { 数据库文件 }
@@ -517,7 +425,7 @@ end;
 
 { 基本读写 }
 
-function TTreeDB.AddNode(Name, Note: string; ToID: integer; mode: TAttachMode): integer;
+function TTreeDB.AddNode(Name, Note: string; ToID: Integer; mode: TAttachMode): Integer;
 begin
   // 从储备库中取出一条记录重新使用
   Result := ReuseNode;
@@ -534,7 +442,7 @@ begin
   AttachNode(Result, ToID, Mode);
 end;
 
-function TTreeDB.ReuseNode: integer;
+function TTreeDB.ReuseNode: Integer;
 var
   Children: TBoundArray;
 begin
@@ -558,7 +466,7 @@ begin
     Result := -1;
 end;
 
-function TTreeDB.CreateNewNode(Name, Note: string): integer;
+function TTreeDB.CreateNewNode(Name, Note: string): Integer;
 begin
   // 插入一条新记录
   FSQLQuery.SQL.Text :=
@@ -578,15 +486,15 @@ begin
   DataChanged(True);
 end;
 
-procedure TTreeDB.DelNode(ID: integer);
+procedure TTreeDB.DelNode(ID: Integer);
 var
   Buf, OldChildren: TBoundArray;
   Count: integer;
 
   // 用于递归的子函数
-  procedure DoDelNode(ID: integer);
+  procedure DoDelNode(ID: Integer);
   var
-    Child: integer;
+    Child: Integer;
   begin
     if Count > High(Buf) then
       SetLength(Buf, Length(Buf) * 2);
@@ -611,7 +519,7 @@ begin
     // 新删除的节点放在子节点列表的前面，这样可以保证最新删除的节点最后被重用，
     // 即最新删除的节点尽可能长时间的留在数据中，便于需要的时候进行数据恢复
     SetLength(Buf, Count + Length(OldChildren));
-    Move(OldChildren[0], Buf[Count], Length(OldChildren) * Sizeof(integer));
+    Move(OldChildren[0], Buf[Count], Length(OldChildren) * Sizeof(Integer));
   end
   else
     SetLength(Buf, Count);
@@ -935,111 +843,6 @@ end;
 
 { 导入和导出 }
 
-function ToLF(Str: string): string;
-var
-  iStart, iEnd: integer;
-  Stream: TStringStream;
-begin
-  iStart := 0;
-  Stream := TStringStream.Create('');
-  try
-    iEnd := Str.IndexOf(#13, iStart);
-    while iEnd <> -1 do begin
-      Stream.WriteString(Str.Substring(iStart, iEnd - iStart));
-      if (iEnd = Str.Length - 1) or (Str[iEnd + 2] <> #10) then
-        Stream.WriteString(#10);
-      iStart := iEnd + 1;
-      iEnd := Str.IndexOf(#13, iStart);
-    end;
-    if (iEnd < Str.Length - 1) then
-      Stream.WriteString(Str.Substring(iStart));
-    Result := Stream.DataString;
-  finally
-    Stream.Free;
-  end;
-end;
-
-function ToLineEnding(Str: string): string;
-var
-  iStart, iEnd: integer;
-  Stream: TStringStream;
-begin
-  if LineEnding = #10 then begin
-    Result := Str;
-    Exit;
-  end;
-
-  iStart := 0;
-  Stream := TStringStream.Create('');
-  try
-    iEnd := Str.IndexOf(#10, iStart);
-    while iEnd <> -1 do begin
-      Stream.WriteString(Str.Substring(iStart, iEnd - iStart));
-      Stream.WriteString(LineEnding);
-      iStart := iEnd + 1;
-      iEnd := Str.IndexOf(#10, iStart);
-    end;
-    if (iEnd < Str.Length - 1) then
-      Stream.WriteString(Str.Substring(iStart));
-    Result := Stream.DataString;
-  finally
-    Stream.Free;
-  end;
-end;
-
-function ReadFile(FileName: string): string;
-var
-  AStream: TFileStream;
-begin
-  AStream := TFileStream.Create(FileName, fmOpenRead);
-  try
-    SetLength(Result, AStream.Size);
-    AStream.ReadBuffer(Result[1], AStream.Size);
-    Result := ToLF(Result);
-  finally
-    AStream.Free;
-  end;
-end;
-
-procedure WriteFile(FileName: string; Text: string);
-var
-  AStream: TFileStream;
-begin
-  AStream := TFileStream.Create(FileName, fmCreate);
-  try
-    Text := ToLineEnding(Text);
-    AStream.WriteBuffer(Text[1], Text.Length);
-  finally
-    AStream.Free;
-  end;
-end;
-
-// 处理文件名中的非法字符
-function FixName(Name: string): string;
-var
-  i: integer;
-begin
-  for i := 0 to High(Name) do
-    if Name[i] in ['/', '\', ':', '<', '>', '*', '?', '|', '"', #9, #10, #13] then
-      Name[i] := '_';
-  Result := Name;
-end;
-
-// 获取一个不存在的文件名（避免与现有文件重名）
-function FixPath(ToDir, Name, Ext: string; LenSuffix: integer): string;
-var
-  i: integer;
-  Suffix: string;
-begin
-  Result := ConcatPaths([ToDir, Name + Ext]);
-  i := 1;
-  while FileExists(Result) or DirectoryExists(Result) do begin
-    Suffix := Format('%.' + IntToStr(LenSuffix) + 'd', [i]);
-    Result := ConcatPaths([ToDir, Name + ' (' + Suffix + ')' + Ext]);
-    Inc(i);
-  end;
-end;
-
 // FileName  ：要导入的文件
 // IncludeExt：导入时是否包含文件的扩展名
 // ToID      ：导入的目标节点
@@ -1205,7 +1008,7 @@ var
   begin
     Dec(Depth);
 
-    Name := FixName(GetName(ID));
+    Name := FixFileName(GetName(ID));
     Note := GetNote(ID);
     Children := GetChildren(ID);
 
@@ -1213,7 +1016,7 @@ var
     if Assigned(Children) and (Depth <> 0) then
     begin
       // 将节点导出为目录
-      ToDir := FixPath(ToDir, Name, '', 3);
+      ToDir := GetNotExistsPath(ToDir, Name, '', 3);
       ForceDirectories(ToDir);
 
       // 保存节点的内容到文本文件
@@ -1226,7 +1029,7 @@ var
     else
     begin
       // 将节点导出为文本文件
-      WriteFile(FixPath(ToDir, Name, Ext, 3), Note);
+      WriteFile(GetNotExistsPath(ToDir, Name, Ext, 3), Note);
     end;
   end;
 
@@ -1342,7 +1145,7 @@ end;
 // Depth      ：要搜索的深度，1 表示只导出当前节点，AllDepth 表示导出所有节点，其它值表示指定深度
 // Rst        ：用来存放搜索结果的变量
 procedure TTreeDB.Search(ID: integer; ASearchText: string; IncludeName, IncludeNote: boolean;
-  Depth: integer; var Rst: TSearchResult);
+  Depth: integer; IgnoreCase: boolean; var Rst: TSearchResult);
 var
   Child: integer;
 
@@ -1350,38 +1153,16 @@ var
   procedure DoSearch(ID: integer; Depth: integer);
   var
     Child: integer;
-    Name, Note: string;
-    LastStart, Start, Length: integer;  // 字节索引的起始位置和长度
-    UStart, ULength: integer;           // 字符索引的其实位置和长度
   begin
     Dec(Depth);
 
-    Length := ASearchText.Length;
-    ULength := UTF8Length(ASearchText);
-
     // 在节点名称中搜索
-    if IncludeName then begin
-      Name := GetName(ID).ToLower;
-      Start := Name.IndexOf(ASearchText);
-      if Start >= 0 then
-        Rst.Add(ID, 0, 0);
-    end;
+    if IncludeName and (UTF8Search(ID, GetName(ID), ASearchText, IgnoreCase, nil, 1, 1) > 0) then
+      Rst.Add(ID, 0, 0);
 
     // 在节点内容中搜索
-    if IncludeNote then begin
-      Note := GetNote(ID).ToLower;
-      LastStart := 0;
-      UStart := 1;
-
-      Start := Note.IndexOf(ASearchText);
-      while Start >= 0 do begin
-        UStart := UStart + UTF8Length(PChar(Note) + LastStart, Start - LastStart);
-        Rst.Add(ID, UStart, ULength);
-
-        LastStart := Start;
-        Start := Note.IndexOf(ASearchText, Start + Length);
-      end;
-    end;
+    if IncludeNote then
+      UTF8Search(ID, GetNote(ID), ASearchText, IgnoreCase, Rst);
 
     if Depth = 0 then Exit;
     for Child in GetChildren(ID) do
@@ -1391,7 +1172,7 @@ var
 begin
   if ASearchText = '' then Exit;
 
-  ASearchText := ASearchText.Replace('\n', #10).ToLower;
+  ASearchText := UnEscape(ASearchText);
 
   if ID in [RootID, RecyclerID] then
     for Child in GetChildren(ID) do
@@ -1409,73 +1190,31 @@ end;
 // Depth       ：要搜索的深度，1 表示只导出当前节点，AllDepth 表示导出所有节点，其它值表示指定深度
 // Rst         ：用来存放替换结果的变量
 procedure TTreeDB.Replace(ID: integer; ASearchText, AReplaceText: string; IncludeName, IncludeNote: boolean;
-  Depth: integer; var Rst: TSearchResult);
+  Depth: integer; IgnoreCase: boolean; var Rst: TSearchResult);
 var
   Child: integer;
-  Replaced: boolean;
-
-  // 在 AText 中搜索 ASearchText，并将其替换为 AReplaceText
-  function OneReplace(ID: integer; AText: string): string;
-  var
-    MiddleString: string;
-    LastStart, Start, SearchLength: integer;  // 字节索引的起始位置和长度
-    UReplacedStart, UReplacedLength: integer; // 字符索引的其实位置和长度
-  begin
-    Result := '';
-
-    LastStart := 0;
-    SearchLength := ASearchText.Length;
-
-    UReplacedStart := 1;
-    UReplacedLength := UTF8Length(AReplaceText);
-
-    Start := AText.IndexOf(ASearchText);
-
-    if Start = -1 then
-    begin
-      Replaced := False;
-      Exit;
-    end;
-
-    while Start >= 0 do
-    begin
-      // 获取不匹配的字符串
-      MiddleString := AText.Substring(LastStart, Start - LastStart);
-
-      UReplacedStart := UReplacedStart + UTF8Length(MiddleString);
-      Rst.Add(ID, UReplacedStart, UReplacedLength);
-
-      Result := Result + MiddleString + AReplaceText;
-
-      LastStart := Start + SearchLength;
-      UReplacedStart := UReplacedStart + UReplacedLength;
-
-      Start := AText.IndexOf(ASearchText, LastStart);
-    end;
-    MiddleString := AText.Substring(LastStart);
-    Result := Result + MiddleString;
-
-    Replaced := True;
-  end;
 
   // 用于递归的子函数
   procedure DoReplace(ID: integer; Depth: integer);
   var
     Child: integer;
-    Name, Note: string;
+    NewName, NewNote: string;
+    Count: Integer;
   begin
     Dec(Depth);
 
     if IncludeName then begin
-      Name := GetName(ID);
-      if Name.IndexOf(ASearchText) <> -1 then
-        SetName(ID, Name.Replace(ASearchText, AReplaceText, [rfReplaceAll, rfIgnoreCase]));
+      Count := Rst.Count;
+      NewName := UTF8Replace(ID, GetName(ID), ASearchText, AReplaceText, IgnoreCase, Rst);
+      if Count < Rst.Count then
+        SetName(ID, NewName);
     end;
 
     if IncludeNote then begin
-      Note := OneReplace(ID, GetNote(ID));
-      if Replaced then
-        SetNote(ID, Note);
+      Count := Rst.Count;
+      NewNote := UTF8Replace(ID, GetNote(ID), ASearchText, AReplaceText, IgnoreCase, Rst);
+      if Count < Rst.Count then
+        SetNote(ID, NewNote);
     end;
 
     if Depth = 0 then Exit;
@@ -1486,8 +1225,8 @@ var
 begin
   if ASearchText = '' then Exit;
 
-  ASearchText := ASearchText.Replace('\n', #10);
-  AReplaceText := AReplaceText.Replace('\n', #10);
+  ASearchText := UnEscape(ASearchText);
+  AReplaceText := UnEscape(AReplaceText);
 
   if ID in [RootID, RecyclerID] then
     for Child in GetChildren(ID) do
@@ -1654,20 +1393,6 @@ begin
     DoReplace(ID, Depth);
 
   Expr.Free;
-end;
-
-// 搜索 APath 中的所有文件和子目录
-procedure FindFiles(APath: string; Rst: TStringList);
-var
-  SearchRec: TRawbyteSearchRec;
-begin
-  if FindFirst(ConcatPaths([APath, '*']), faAnyFile or faDirectory, SearchRec) = 0 then
-    repeat
-      if (SearchRec.Name = '.') or (SearchRec.Name = '..') then
-        continue;
-      Rst.Add(SearchRec.Name);
-    until FindNext(SearchRec) <> 0;
-  FindClose(SearchRec);
 end;
 
 initialization
