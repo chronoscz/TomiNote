@@ -1,0 +1,10 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=TomiNote
+Comment=A simple note collection tool.
+Exec=TomiNote
+Icon=TomiNote
+Terminal=false
+Type=Application
+Categories=GNOME;Application;
+StartupNotify=true
