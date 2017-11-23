@@ -10,15 +10,17 @@ override_dh_auto_clean:
 	$(RM) lib *.res TomiNote
 
 override_dh_auto_build:
-	lazbuild --build-mode=Release TomiNote.lpi
+	lazbuild --build-mode=Release src/TomiNote.lpi
 
 override_dh_auto_install:
 	install -d -m 755 $(ROOT)/usr/bin
-	install -s -m 755 TomiNote $(ROOT)/usr/bin
+	install -s -m 755 src/TomiNote $(ROOT)/usr/bin
 	install -d -m 755 $(ROOT)/usr/share/applications
 	install -m 755 install/deb/TomiNote.desktop $(ROOT)/usr/share/applications
 	install -d -m 755 $(ROOT)/usr/share/pixmaps
 	install -m 644 install/deb/TomiNote.png $(ROOT)/usr/share/pixmaps
-
+	install -d -m 755 $(ROOT)/usr/share/TomiNote/languages
+	install -D -m 755 src/languages/* $(ROOT)/usr/share/TomiNote/languages
+	
 %:
 	dh $@

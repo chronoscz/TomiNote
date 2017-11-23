@@ -352,7 +352,8 @@ type
     // 修补 GTK2 中 SelText:=Something 不触发 OnChange 事件的 BUG
     FFixSelTextBug    : boolean;
 
-    procedure SaveControlState;
+    procedure
+SaveControlState;
     procedure UpdateDBControlState;
     procedure UpdateTreeControlState;
     procedure UpdateRecyclerState;
@@ -445,7 +446,7 @@ type
     procedure ReLoadNodeName;
 
   public
-
+    LangDir: string;
     procedure LoadControlState;
     function  GetTotalHistorySize: integer;
     procedure DiscardHistory(KeepSelected: boolean);
@@ -481,7 +482,7 @@ const
   DefDBName            = 'new';
   DefDBDir             = 'data';
   DefBackupDir         = 'backup';
-  LanguagesDir         = 'languages';
+  DefLanguagesDir      = 'languages';
   DBFileExt            = '.tdb';
   EmptyRecyIcon        = 38;
   FullRecyIcon         = 39;
@@ -516,6 +517,8 @@ uses
 { TformMain }
 
 procedure TformMain.FormCreate(Sender: TObject);
+var
+  ConfigFileName: string;
 begin
   // 初始化字段
   FDBFullName    := '';
@@ -534,7 +537,14 @@ begin
   FTreeDB        := TTreeDB.Create;
   FTreeDB.OnActiveChanged := @DBActiveChanged;
 
-  Config         := TConfig.Create(ChangeFileExt(ParamStr(0), '.ini'));
+  if Application.HasOption('l', 'lang') then LangDir := ExpandFileName(Application.GetOptionValue('l', 'lang'))
+    else LangDir := ConcatPaths([AppDir, DefLanguagesDir]);
+
+  if Application.HasOption('c', 'config') then
+    ConfigFileName := ExpandFileName(Application.GetOptionValue('c', 'config'))
+    else ConfigFileName := ChangeFileExt(ParamStr(0), '.ini');
+  ForceDirectories(ExtractFileDir(ConfigFileName));
+  Config         := TConfig.Create(ConfigFileName);
 
   FEditHistory   := THistoryManager.Create(editRename);
   FEditHistory.CreateHistory('');
@@ -546,7 +556,7 @@ begin
 
   // 初始化窗口状态
   if Config.Language <> '' then
-    SetDefaultLang(Config.Language);
+    SetDefaultLang(Config.Language, LangDir);
 
   actnTextUtils.Caption := actnNodeUtils.Caption;
 
