@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Language: cs\n"
-"X-Generator: Poedit 2.0.4\n"
+"X-Generator: Poedit 1.8.7.1\n"
 
 #: fexport.res_radgexportmode
 msgid ""
@@ -550,14 +550,6 @@ msgstr "Zálohování databáze selhalo!"
 msgid "Fail to close database!"
 msgstr "Zavření databáze selhalo!"
 
-#: fmain.res_coverfilefail
-msgid "Fail to cover file!"
-msgstr "Chyba přepsání soubor!"
-
-#: fmain.res_coverfiletip
-msgid "The file already exists. Do you want to cover it?"
-msgstr "Soubor již existuje. Chcete jej přepsat?"
-
 #: fmain.res_createdbfail
 msgid "Fail to create database!"
 msgstr "Chyba vytvoření databáze!"
@@ -589,6 +581,14 @@ msgstr "ID uzlu: %d"
 #: fmain.res_opendbfail
 msgid "Fail to open database!"
 msgstr "Chyba otevření databáze!"
+
+#: fmain.res_overwritefilefail
+msgid "Fail to overwrite file!"
+msgstr "Chyba přepsání soubor!"
+
+#: fmain.res_overwritefiletip
+msgid "The file already exists. Do you want to overwrite it?"
+msgstr "Soubor již existuje. Chcete jej přepsat?"
 
 #: fmain.res_recentfilenotexists
 msgid "The file doesn't exists, do you want to remove the Menu Item of this recent file?"
