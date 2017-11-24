@@ -339,7 +339,8 @@ type
 
   private
 
-    FLangDir: string;
+    FConfigDir        : string;
+    FLangDir          : string;
 
     FTreeDB           : TTreeDB;         // 数据库管理器
     FDBFullName       : string;          // 数据库完整文件名
@@ -479,6 +480,7 @@ type
     procedure ExportToDir(ToPath: string; Node: TTreeNode; Ext: string; Depth: integer);
     function  ExportToDB(ToPath: string; Node: TTreeNode; Depth: integer): boolean;
 
+    property  ConfigDir : string read FConfigDir;
     property  LangDir   : string read FLangDir;
     property  DBFullName: string read FDBFullName;
     property  DBDirName : string read FDBFileDir;
@@ -530,8 +532,6 @@ uses
 { TformMain }
 
 procedure TformMain.FormCreate(Sender: TObject);
-var
-  ConfigFileName: string;
 begin
   // 初始化字段
   FDBFullName    := '';
@@ -556,11 +556,11 @@ begin
     FLangDir := ConcatPaths([AppDir, DefLanguagesDir]);
 
   if Application.HasOption('c', 'config') then
-    ConfigFileName := ExpandFileName(Application.GetOptionValue('c', 'config'))
+    FConfigDir := ExpandFileName(Application.GetOptionValue('c', 'config'))
   else
-    ConfigFileName := ChangeFileExt(ParamStrUTF8(0), '.ini');
-  ForceDirectories(ExtractFileDir(ConfigFileName));
-  Config         := TConfig.Create(ConfigFileName);
+    FConfigDir := AppDir;
+  ForceDirectories(FConfigDir);
+  Config         := TConfig.Create(ConcatPaths([FConfigDir, AppName + '.ini']));
 
   FEditHistory   := THistoryManager.Create(editRename);
   FEditHistory.CreateHistory('');
