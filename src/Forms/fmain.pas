@@ -221,12 +221,12 @@ type
     pmiCut2               : TMenuItem;
     pmiCopy2              : TMenuItem;
     pmiPaste2             : TMenuItem;
-    pmiSplitter41         : TMenuItem;
     pmiSelectAll2         : TMenuItem;
     pmiDelete2            : TMenuItem;
-    pmiSplitter42         : TMenuItem;
     pmiUndo2              : TMenuItem;
     pmiRedo2              : TMenuItem;
+    pmiSplitter41         : TMenuItem;
+    pmiSplitter42         : TMenuItem;
 
     tbarMain              : TToolBar;
     tbtnNew               : TToolButton;
