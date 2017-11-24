@@ -208,7 +208,7 @@ ResourceString
 
 const
   AppTitle                = 'TomiNote';
-  Version                 = 'v1.0 Beta2';
+  Version                 = 'v1.0 Beta3';
 
   AllDepth                = 0;
 
