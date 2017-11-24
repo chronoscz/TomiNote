@@ -1011,14 +1011,6 @@ msgstr "Fail to backup database!"
 msgid "Fail to close database!"
 msgstr "Fail to close database!"
 
-#: fmain.res_coverfilefail
-msgid "Fail to cover file!"
-msgstr "Fail to cover file!"
-
-#: fmain.res_coverfiletip
-msgid "The file already exists. Do you want to cover it?"
-msgstr "The file already exists. Do you want to cover it?"
-
 #: fmain.res_createdbfail
 msgid "Fail to create database!"
 msgstr "Fail to create database!"
@@ -1050,6 +1042,14 @@ msgstr "Node ID: %d"
 #: fmain.res_opendbfail
 msgid "Fail to open database!"
 msgstr "Fail to open database!"
+
+#: fmain.res_overwritefilefail
+msgid "Fail to overwrite file!"
+msgstr "Fail to overwrite file!"
+
+#: fmain.res_overwritefiletip
+msgid "The file already exists. Do you want to overwrite it?"
+msgstr "The file already exists. Do you want to overwrite it?"
 
 #: fmain.res_recentfilenotexists
 msgid "The file doesn't exists, do you want to remove the Menu Item of this recent file?"
