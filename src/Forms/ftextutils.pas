@@ -40,6 +40,7 @@ type
   private
     FLastScriptName : string;
     FScripts        : TStringList;
+    procedure DeleteSelected;
     procedure LoadScrips;
     procedure SaveScripts;
     procedure OKEvent;
@@ -178,7 +179,7 @@ begin
   if FLastScriptName = lstbScriptList.Items[lstbScriptList.ItemIndex] then
     FLastScriptName := '';
 
-  lstbScriptList.DeleteSelected;
+  DeleteSelected;
 
   if lstbScriptList.Count - 1 >= Index then
     lstbScriptList.ItemIndex := Index
@@ -197,6 +198,25 @@ begin
   if lstbScriptList.ItemIndex = -1 then Exit;
 
   lstbScriptList.Items[lstbScriptList.ItemIndex] := editScriptName.Text;
+end;
+
+procedure TformTextUtils.DeleteSelected;
+var
+  i: Integer;
+begin
+  with lstbScriptList do
+  if MultiSelect then
+  begin
+    i := Items.Count;
+    while i > 0 do
+    begin
+      dec(i);
+      if Selected[i] then
+        Items.Delete(i);
+    end;
+  end else
+    if ItemIndex>=0 then
+      Items.Delete(ItemIndex);
 end;
 
 procedure TformTextUtils.editScriptNameKeyPress(Sender: TObject; var Key: char);
