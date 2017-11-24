@@ -49,7 +49,7 @@ resourcestring
     #10 +
     'You can use the command line parameter --c or --config to specify the directory of the configuration file, such as: TomiNote --config=~/.config/TomiNote'#10 +
     #10 +
-    'You can use the command line parameter --l or --lang to specify the directory of the language files, such as TomiNote --lang=/usr/share/TomiNote/languages'#10 +
+    'You can use the command line parameter --l or --lang to specify the directory of the language files, such as: TomiNote --lang=/usr/share/TomiNote/languages'#10 +
     #10 +
     #10 +
     #10 +
