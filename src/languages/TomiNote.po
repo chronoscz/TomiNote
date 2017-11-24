@@ -525,14 +525,6 @@ msgstr ""
 msgid "Fail to close database!"
 msgstr ""
 
-#: fmain.res_coverfilefail
-msgid "Fail to cover file!"
-msgstr ""
-
-#: fmain.res_coverfiletip
-msgid "The file already exists. Do you want to cover it?"
-msgstr ""
-
 #: fmain.res_createdbfail
 msgid "Fail to create database!"
 msgstr ""
@@ -563,6 +555,14 @@ msgstr ""
 
 #: fmain.res_opendbfail
 msgid "Fail to open database!"
+msgstr ""
+
+#: fmain.res_overwritefilefail
+msgid "Fail to overwrite file!"
+msgstr ""
+
+#: fmain.res_overwritefiletip
+msgid "The file already exists. Do you want to overwrite it?"
 msgstr ""
 
 #: fmain.res_recentfilenotexists
