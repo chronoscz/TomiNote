@@ -98,7 +98,6 @@
     <RunParams>
       <local>
         <FormatVersion Value="1"/>
-        <CommandLineParams Value="--config=~/.config/TomiNote/TomiNote.ini --lang=/usr/share/TomiNote/languages"/>
       </local>
     </RunParams>
     <RequiredPackages Count="1">
@@ -208,6 +207,9 @@
       </Options>
     </Linking>
     <Other>
+      <CompilerMessages>
+        <IgnoredMessages idx5024="True"/>
+      </CompilerMessages>
       <CustomOptions Value="-dUseCThreads"/>
     </Other>
   </CompilerOptions>

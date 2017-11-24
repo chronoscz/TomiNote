@@ -1668,3 +1668,4 @@ msgstr "Non greedy"
 #: uconfig.res_notactive
 msgid "NotActive"
 msgstr "NotActive"
+

@@ -2,7 +2,7 @@
 Encoding=UTF-8
 Name=TomiNote
 Comment=A simple note collection tool.
-Exec=TomiNote --config=~/.config/TomiNote/TomiNote.ini --lang=/usr/share/TomiNote/languages
+Exec=TomiNote --config=~/.config/TomiNote --lang=/usr/share/TomiNote/languages
 Icon=TomiNote
 Terminal=false
 Type=Application

@@ -460,7 +460,6 @@ SaveControlState;
     procedure ReLoadNodeName;
 
   public
-    LangDir: string;
     procedure LoadControlState;
     function  GetTotalHistorySize: integer;
     procedure DiscardHistory(KeepSelected: boolean);

@@ -1156,3 +1156,4 @@ msgstr ""
 #: uconfig.res_notactive
 msgid "NotActive"
 msgstr ""
+

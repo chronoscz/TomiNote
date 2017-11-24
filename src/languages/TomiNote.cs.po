@@ -1205,3 +1205,4 @@ msgstr "Nechamtivý"
 #: uconfig.res_notactive
 msgid "NotActive"
 msgstr "Neaktivní"
+

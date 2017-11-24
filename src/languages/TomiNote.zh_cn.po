@@ -1868,3 +1868,4 @@ msgstr "非贪婪"
 #: uconfig.res_notactive
 msgid "NotActive"
 msgstr "未激活"
+
