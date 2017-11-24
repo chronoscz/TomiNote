@@ -767,7 +767,7 @@ end;
 
 initialization
 
-AppDir := ExtractFileDir(ParamStrUTF8(0));
+AppDir  := ExtractFileDir(ParamStrUTF8(0));
 AppName := ChangeFileExt(ExtractFileName(ParamStrUTF8(0)), '');
 
 end.
