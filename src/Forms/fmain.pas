@@ -1868,7 +1868,7 @@ begin
   if FileIsReadOnly(Result) then Result := '';
 end;
 
-function CoverFileDialog(AFileName, ATitle: string): boolean;
+function OverwriteFileDialog(AFileName, ATitle: string): boolean;
 begin
   Result := not FileExists(AFileName);
   if Result then Exit;
@@ -1998,7 +1998,7 @@ end;
 
 function TformMain.CreateDB(AFileName: string = ''): boolean;
 var
-  CoverFile: Boolean;
+  OverwriteFile: Boolean;
 begin
   Result := False;
 
@@ -2012,15 +2012,15 @@ begin
 
   if not SaveDBDialog then Exit;
 
-  CoverFile := False;
+  OverwriteFile := False;
   if FileExists(AFileName) then begin
-    CoverFile := Application.MessageBox(PChar(Res_OverwriteFileTip), PChar(AppTitle), MB_YESNO + MB_ICONQUESTION) = idYes;
-    if not CoverFile then Exit;
+    OverwriteFile := Application.MessageBox(PChar(Res_OverwriteFileTip), PChar(AppTitle), MB_YESNO + MB_ICONQUESTION) = idYes;
+    if not OverwriteFile then Exit;
   end;
 
   if not CloseDB(False) then Exit;
 
-  if CoverFile and not DeleteFile(AFileName) then
+  if OverwriteFile and not DeleteFile(AFileName) then
   begin
     Application.MessageBox(PChar(Res_OverwriteFileFail), PChar(AppTitle), MB_OK + MB_ICONERROR);
     Exit;
@@ -2112,7 +2112,7 @@ end;
 
 function TformMain.SaveDBAs(AFileName: String): boolean;
 var
-  CoverFile: Boolean;
+  OverwriteFile: Boolean;
 begin
   Result := False;
 
@@ -2124,10 +2124,10 @@ begin
     AFileName := svdg1.FileName;
   end;
 
-  CoverFile := False;
+  OverwriteFile := False;
   if FileExists(AFileName) then begin
-    CoverFile := Application.MessageBox(PChar(Res_OverwriteFileTip), PChar(AppTitle), MB_YESNO + MB_ICONQUESTION) = idYes;
-    if not CoverFile then Exit;
+    OverwriteFile := Application.MessageBox(PChar(Res_OverwriteFileTip), PChar(AppTitle), MB_YESNO + MB_ICONQUESTION) = idYes;
+    if not OverwriteFile then Exit;
   end;
 
   Result := FTreeDB.ExportToDB(RootID, RootID, AFileName + '.tmp', AllDepth) and
@@ -2138,7 +2138,7 @@ begin
     Exit;
   end;
 
-  if CoverFile then begin
+  if OverwriteFile then begin
     if AFileName = FDBFullName then
       CloseDB(False);
     if not DeleteFile(AFileName) then
