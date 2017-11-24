@@ -232,6 +232,7 @@ object formMain: TformMain
       OnExit = editRenameExit
       OnKeyDown = editRenameKeyDown
       ParentColor = True
+      PopupMenu = menuEdit
       TabOrder = 3
       Visible = False
     end
@@ -7977,5 +7978,37 @@ object formMain: TformMain
     Height = 657
     left = 404
     top = 113
+  end
+  object menuEdit: TPopupMenu
+    Images = imglMain
+    left = 320
+    top = 240
+    object pmiCut2: TMenuItem
+      Action = actnCut
+    end
+    object pmiCopy2: TMenuItem
+      Action = actnCopy
+    end
+    object pmiPaste2: TMenuItem
+      Action = actnPaste
+    end
+    object pmiSplitter41: TMenuItem
+      Caption = '-'
+    end
+    object pmiSelectAll2: TMenuItem
+      Action = actnSelectAll
+    end
+    object pmiDelete2: TMenuItem
+      Action = actnDelete
+    end
+    object pmiSplitter42: TMenuItem
+      Caption = '-'
+    end
+    object pmiUndo2: TMenuItem
+      Action = actnUndo
+    end
+    object pmiRedo2: TMenuItem
+      Action = actnRedo
+    end
   end
 end

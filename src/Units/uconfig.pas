@@ -208,7 +208,7 @@ ResourceString
 
 const
   AppTitle                = 'TomiNote';
-  Version                 = 'v1.0 Beta2';
+  Version                 = 'v1.0 Beta3';
 
   AllDepth                = 0;
 
@@ -767,7 +767,7 @@ end;
 
 initialization
 
-AppDir := ExtractFileDir(ParamStrUTF8(0));
+AppDir  := ExtractFileDir(ParamStrUTF8(0));
 AppName := ChangeFileExt(ExtractFileName(ParamStrUTF8(0)), '');
 
 end.

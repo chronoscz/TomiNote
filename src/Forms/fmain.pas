@@ -217,6 +217,17 @@ type
     pmiSplitter32         : TMenuItem;
     pmiSplitter33         : TMenuItem;
 
+    menuEdit              : TPopupMenu;
+    pmiCut2               : TMenuItem;
+    pmiCopy2              : TMenuItem;
+    pmiPaste2             : TMenuItem;
+    pmiSelectAll2         : TMenuItem;
+    pmiDelete2            : TMenuItem;
+    pmiUndo2              : TMenuItem;
+    pmiRedo2              : TMenuItem;
+    pmiSplitter41         : TMenuItem;
+    pmiSplitter42         : TMenuItem;
+
     tbarMain              : TToolBar;
     tbtnNew               : TToolButton;
     tbtnOpen              : TToolButton;
@@ -327,6 +338,9 @@ type
     procedure timrMainTimer(Sender: TObject);
 
   private
+
+    FConfigDir        : string;          // 配置文件所在目录
+    FLangDir          : string;          // 语言文件所在目录
 
     FTreeDB           : TTreeDB;         // 数据库管理器
     FDBFullName       : string;          // 数据库完整文件名
@@ -467,6 +481,8 @@ SaveControlState;
     procedure ExportToDir(ToPath: string; Node: TTreeNode; Ext: string; Depth: integer);
     function  ExportToDB(ToPath: string; Node: TTreeNode; Depth: integer): boolean;
 
+    property  ConfigDir : string read FConfigDir;
+    property  LangDir   : string read FLangDir;
     property  DBFullName: string read FDBFullName;
     property  DBDirName : string read FDBFileDir;
     property  DBFileName: string read FDBFileName;
@@ -495,8 +511,8 @@ resourcestring
   Res_BackupDBFail        = 'Fail to backup database!';
   Res_RecentFileNotExists = 'The file doesn''t exists, do you want to remove the Menu Item of this recent file?';
   Res_DataChangedTip      = 'The data has been changed. Do you want to save it?';
-  Res_CoverFileTip        = 'The file already exists. Do you want to cover it?';
-  Res_CoverFileFail       = 'Fail to cover file!';
+  Res_OverwriteFileTip    = 'The file already exists. Do you want to overwrite it?';
+  Res_OverwriteFileFail   = 'Fail to overwrite file!';
   Res_DelNodeWarning      = 'The node will not be restored after deleting, Are you sure to delete the node?';
   Res_EmptyRecyWarning    = 'The nodes will not be recovered after empty the recycler. Are you sure to empty the recycler?';
   Res_UnnamedNode         = 'Unnamed Node';
@@ -537,14 +553,18 @@ begin
   FTreeDB        := TTreeDB.Create;
   FTreeDB.OnActiveChanged := @DBActiveChanged;
 
-  if Application.HasOption('l', 'lang') then LangDir := ExpandFileName(Application.GetOptionValue('l', 'lang'))
-    else LangDir := ConcatPaths([AppDir, DefLanguagesDir]);
+  if Application.HasOption('l', 'lang') then
+    FLangDir := ExpandFileName(Application.GetOptionValue('l', 'lang'))
+  else
+    FLangDir := ConcatPaths([AppDir, DefLanguagesDir]);
 
+  // TomiNote.ini 和 script.ini 都存放在 FConfigDir 目录中
   if Application.HasOption('c', 'config') then
-    ConfigFileName := ExpandFileName(Application.GetOptionValue('c', 'config'))
-    else ConfigFileName := ChangeFileExt(ParamStr(0), '.ini');
-  ForceDirectories(ExtractFileDir(ConfigFileName));
-  Config         := TConfig.Create(ConfigFileName);
+    FConfigDir := ExpandFileName(Application.GetOptionValue('c', 'config'))
+  else
+    FConfigDir := AppDir;
+  ForceDirectories(FConfigDir);
+  Config         := TConfig.Create(ConcatPaths([FConfigDir, AppName + '.ini']));
 
   FEditHistory   := THistoryManager.Create(editRename);
   FEditHistory.CreateHistory('');
@@ -556,7 +576,7 @@ begin
 
   // 初始化窗口状态
   if Config.Language <> '' then
-    SetDefaultLang(Config.Language, LangDir);
+    SetDefaultLang(Config.Language, FLangDir);
 
   actnTextUtils.Caption := actnNodeUtils.Caption;
 
@@ -1848,19 +1868,20 @@ begin
   if DirectoryExists(Result) then Exit;
 
   Result := AppDir;
+  if FileIsReadOnly(Result) then Result := '';
 end;
 
-function CoverFileDialog(AFileName, ATitle: string): boolean;
+function OverwriteFileDialog(AFileName, ATitle: string): boolean;
 begin
   Result := not FileExists(AFileName);
   if Result then Exit;
 
-  Result := Application.MessageBox(PChar(Res_CoverFileTip), PChar(ATitle), MB_YESNO + MB_ICONQUESTION) = idYes;
+  Result := Application.MessageBox(PChar(Res_OverwriteFileTip), PChar(ATitle), MB_YESNO + MB_ICONQUESTION) = idYes;
 
   if Result and not DeleteFile(AFileName) then
   begin
     Result := False;
-    Application.MessageBox(PChar(Res_CoverFileFail), PChar(ATitle), MB_OK + MB_ICONERROR);
+    Application.MessageBox(PChar(Res_OverwriteFileFail), PChar(ATitle), MB_OK + MB_ICONERROR);
   end;
 end;
 
@@ -1980,7 +2001,7 @@ end;
 
 function TformMain.CreateDB(AFileName: string = ''): boolean;
 var
-  CoverFile: Boolean;
+  OverwriteFile: Boolean;
 begin
   Result := False;
 
@@ -1994,17 +2015,17 @@ begin
 
   if not SaveDBDialog then Exit;
 
-  CoverFile := False;
+  OverwriteFile := False;
   if FileExists(AFileName) then begin
-    CoverFile := Application.MessageBox(PChar(Res_CoverFileTip), PChar(AppTitle), MB_YESNO + MB_ICONQUESTION) = idYes;
-    if not CoverFile then Exit;
+    OverwriteFile := Application.MessageBox(PChar(Res_OverwriteFileTip), PChar(AppTitle), MB_YESNO + MB_ICONQUESTION) = idYes;
+    if not OverwriteFile then Exit;
   end;
 
   if not CloseDB(False) then Exit;
 
-  if CoverFile and not DeleteFile(AFileName) then
+  if OverwriteFile and not DeleteFile(AFileName) then
   begin
-    Application.MessageBox(PChar(Res_CoverFileFail), PChar(AppTitle), MB_OK + MB_ICONERROR);
+    Application.MessageBox(PChar(Res_OverwriteFileFail), PChar(AppTitle), MB_OK + MB_ICONERROR);
     Exit;
   end;
 
@@ -2094,7 +2115,7 @@ end;
 
 function TformMain.SaveDBAs(AFileName: String): boolean;
 var
-  CoverFile: Boolean;
+  OverwriteFile: Boolean;
 begin
   Result := False;
 
@@ -2106,10 +2127,10 @@ begin
     AFileName := svdg1.FileName;
   end;
 
-  CoverFile := False;
+  OverwriteFile := False;
   if FileExists(AFileName) then begin
-    CoverFile := Application.MessageBox(PChar(Res_CoverFileTip), PChar(AppTitle), MB_YESNO + MB_ICONQUESTION) = idYes;
-    if not CoverFile then Exit;
+    OverwriteFile := Application.MessageBox(PChar(Res_OverwriteFileTip), PChar(AppTitle), MB_YESNO + MB_ICONQUESTION) = idYes;
+    if not OverwriteFile then Exit;
   end;
 
   Result := FTreeDB.ExportToDB(RootID, RootID, AFileName + '.tmp', AllDepth) and
@@ -2120,12 +2141,12 @@ begin
     Exit;
   end;
 
-  if CoverFile then begin
+  if OverwriteFile then begin
     if AFileName = FDBFullName then
       CloseDB(False);
     if not DeleteFile(AFileName) then
     begin
-      Application.MessageBox(PChar(Res_CoverFileFail), PChar(AppTitle), MB_OK + MB_ICONERROR);
+      Application.MessageBox(PChar(Res_OverwriteFileFail), PChar(AppTitle), MB_OK + MB_ICONERROR);
       Exit;
     end;
   end;
@@ -2134,7 +2155,7 @@ begin
 
   Result := RenameFile(AFileName + '.tmp', AFileName);
   if not Result then begin
-    Application.MessageBox(PChar(Res_CoverFileFail), PChar(AppTitle), MB_OK + MB_ICONERROR);
+    Application.MessageBox(PChar(Res_OverwriteFileFail), PChar(AppTitle), MB_OK + MB_ICONERROR);
     Exit;
   end;
 
@@ -2692,6 +2713,7 @@ begin
     FLastNode.Text := editRename.Text;
     DataStateChanged(True);
   end;
+  FEditHistory.Enabled := False;
 end;
 
 procedure TformMain.SelectPrevNode;

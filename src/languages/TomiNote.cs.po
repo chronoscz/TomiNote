@@ -88,6 +88,10 @@ msgid ""
 "\n"
 "This program uses dynamic load node, when you open the database, it will not load all the nodes, only the first depth node is loaded, when you expand a node, it will load its next node, so you don't have to worry about loading too much data too slow, but the count of nodes should not exceed 2147483640, which is determined by the type of integer used by the program, you can modify the source code to make it support more The number of nodes, but also consume more database space.\n"
 "\n"
+"You can use the command line parameter --c or --config to specify the directory of the configuration file, such as: TomiNote --config=~/.config/TomiNote\n"
+"\n"
+"You can use the command line parameter --l or --lang to specify the directory of the language files, such as: TomiNote --lang=/usr/share/TomiNote/languages\n"
+"\n"
 "\n"
 "\n"
 "[Move Node]\n"
@@ -546,14 +550,6 @@ msgstr "Zálohování databáze selhalo!"
 msgid "Fail to close database!"
 msgstr "Zavření databáze selhalo!"
 
-#: fmain.res_coverfilefail
-msgid "Fail to cover file!"
-msgstr "Chyba přepsání soubor!"
-
-#: fmain.res_coverfiletip
-msgid "The file already exists. Do you want to cover it?"
-msgstr "Soubor již existuje. Chcete jej přepsat?"
-
 #: fmain.res_createdbfail
 msgid "Fail to create database!"
 msgstr "Chyba vytvoření databáze!"
@@ -585,6 +581,14 @@ msgstr "ID uzlu: %d"
 #: fmain.res_opendbfail
 msgid "Fail to open database!"
 msgstr "Chyba otevření databáze!"
+
+#: fmain.res_overwritefilefail
+msgid "Fail to overwrite file!"
+msgstr "Chyba přepsání soubor!"
+
+#: fmain.res_overwritefiletip
+msgid "The file already exists. Do you want to overwrite it?"
+msgstr "Soubor již existuje. Chcete jej přepsat?"
 
 #: fmain.res_recentfilenotexists
 msgid "The file doesn't exists, do you want to remove the Menu Item of this recent file?"

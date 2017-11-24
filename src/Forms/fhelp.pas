@@ -47,6 +47,10 @@ resourcestring
     #10 +
     'This program uses dynamic load node, when you open the database, it will not load all the nodes, only the first depth node is loaded, when you expand a node, it will load its next node, so you don''t have to worry about loading too much data too slow, but the count of nodes should not exceed 2147483640, which is determined by the type of integer used by the program, you can modify the source code to make it support more The number of nodes, but also consume more database space.'#10 +
     #10 +
+    'You can use the command line parameter --c or --config to specify the directory of the configuration file, such as: TomiNote --config=~/.config/TomiNote'#10 +
+    #10 +
+    'You can use the command line parameter --l or --lang to specify the directory of the language files, such as: TomiNote --lang=/usr/share/TomiNote/languages'#10 +
+    #10 +
     #10 +
     #10 +
     '[Move Node]'#10 +
@@ -566,4 +570,3 @@ begin
 end;
 
 end.
-

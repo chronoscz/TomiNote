@@ -216,7 +216,7 @@ begin
   Line := '';
   Title := '';
   Content := '';
-  ConfigFile := ConcatPaths([AppDir, ScriptFile]);
+  ConfigFile := ConcatPaths([formMain.ConfigDir, ScriptFile]);
 
   Strs := TStringList.Create;
   try
@@ -258,7 +258,7 @@ var
   Strs: TStringList;
   i: integer;
 begin
-  ConfigFile := ConcatPaths([AppDir, ScriptFile]);
+  ConfigFile := ConcatPaths([formMain.ConfigDir, ScriptFile]);
 
   if FScripts.Count = 0 then begin
     if FileExists(ConfigFile) then DeleteFile(ConfigFile);
@@ -294,4 +294,3 @@ begin
 end;
 
 end.
-
