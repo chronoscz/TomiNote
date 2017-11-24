@@ -339,8 +339,8 @@ type
 
   private
 
-    FConfigDir        : string;
-    FLangDir          : string;
+    FConfigDir        : string;          // 配置文件所在目录
+    FLangDir          : string;          // 语言文件所在目录
 
     FTreeDB           : TTreeDB;         // 数据库管理器
     FDBFullName       : string;          // 数据库完整文件名
@@ -555,6 +555,7 @@ begin
   else
     FLangDir := ConcatPaths([AppDir, DefLanguagesDir]);
 
+  // TomiNote.ini 和 script.ini 都存放在 FConfigDir 目录中
   if Application.HasOption('c', 'config') then
     FConfigDir := ExpandFileName(Application.GetOptionValue('c', 'config'))
   else
