@@ -510,8 +510,8 @@ resourcestring
   Res_BackupDBFail        = 'Fail to backup database!';
   Res_RecentFileNotExists = 'The file doesn''t exists, do you want to remove the Menu Item of this recent file?';
   Res_DataChangedTip      = 'The data has been changed. Do you want to save it?';
-  Res_CoverFileTip        = 'The file already exists. Do you want to cover it?';
-  Res_CoverFileFail       = 'Fail to cover file!';
+  Res_OverwriteFileTip    = 'The file already exists. Do you want to overwrite it?';
+  Res_OverwriteFileFail   = 'Fail to overwrite file!';
   Res_DelNodeWarning      = 'The node will not be restored after deleting, Are you sure to delete the node?';
   Res_EmptyRecyWarning    = 'The nodes will not be recovered after empty the recycler. Are you sure to empty the recycler?';
   Res_UnnamedNode         = 'Unnamed Node';
@@ -1873,12 +1873,12 @@ begin
   Result := not FileExists(AFileName);
   if Result then Exit;
 
-  Result := Application.MessageBox(PChar(Res_CoverFileTip), PChar(ATitle), MB_YESNO + MB_ICONQUESTION) = idYes;
+  Result := Application.MessageBox(PChar(Res_OverwriteFileTip), PChar(ATitle), MB_YESNO + MB_ICONQUESTION) = idYes;
 
   if Result and not DeleteFile(AFileName) then
   begin
     Result := False;
-    Application.MessageBox(PChar(Res_CoverFileFail), PChar(ATitle), MB_OK + MB_ICONERROR);
+    Application.MessageBox(PChar(Res_OverwriteFileFail), PChar(ATitle), MB_OK + MB_ICONERROR);
   end;
 end;
 
@@ -2014,7 +2014,7 @@ begin
 
   CoverFile := False;
   if FileExists(AFileName) then begin
-    CoverFile := Application.MessageBox(PChar(Res_CoverFileTip), PChar(AppTitle), MB_YESNO + MB_ICONQUESTION) = idYes;
+    CoverFile := Application.MessageBox(PChar(Res_OverwriteFileTip), PChar(AppTitle), MB_YESNO + MB_ICONQUESTION) = idYes;
     if not CoverFile then Exit;
   end;
 
@@ -2022,7 +2022,7 @@ begin
 
   if CoverFile and not DeleteFile(AFileName) then
   begin
-    Application.MessageBox(PChar(Res_CoverFileFail), PChar(AppTitle), MB_OK + MB_ICONERROR);
+    Application.MessageBox(PChar(Res_OverwriteFileFail), PChar(AppTitle), MB_OK + MB_ICONERROR);
     Exit;
   end;
 
@@ -2126,7 +2126,7 @@ begin
 
   CoverFile := False;
   if FileExists(AFileName) then begin
-    CoverFile := Application.MessageBox(PChar(Res_CoverFileTip), PChar(AppTitle), MB_YESNO + MB_ICONQUESTION) = idYes;
+    CoverFile := Application.MessageBox(PChar(Res_OverwriteFileTip), PChar(AppTitle), MB_YESNO + MB_ICONQUESTION) = idYes;
     if not CoverFile then Exit;
   end;
 
@@ -2143,7 +2143,7 @@ begin
       CloseDB(False);
     if not DeleteFile(AFileName) then
     begin
-      Application.MessageBox(PChar(Res_CoverFileFail), PChar(AppTitle), MB_OK + MB_ICONERROR);
+      Application.MessageBox(PChar(Res_OverwriteFileFail), PChar(AppTitle), MB_OK + MB_ICONERROR);
       Exit;
     end;
   end;
@@ -2152,7 +2152,7 @@ begin
 
   Result := RenameFile(AFileName + '.tmp', AFileName);
   if not Result then begin
-    Application.MessageBox(PChar(Res_CoverFileFail), PChar(AppTitle), MB_OK + MB_ICONERROR);
+    Application.MessageBox(PChar(Res_OverwriteFileFail), PChar(AppTitle), MB_OK + MB_ICONERROR);
     Exit;
   end;
 
