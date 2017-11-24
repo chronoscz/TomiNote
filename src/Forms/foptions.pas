@@ -401,7 +401,7 @@ begin
   FLanguageStrings.StrictDelimiter := True;
   FLanguageStrings.DelimitedText := Res_LangStrings;
 
-  ALangDir := ConcatPaths([AppDir, LanguagesDir]);
+  ALangDir := formMain.LangDir;
 
   for i := 0 to FLanguageStrings.Count - 1 do begin
     ALangCode := FLanguageStrings.Names[i];
@@ -430,7 +430,7 @@ begin
   end;
 
   Config.Language:= Lang;
-  SetDefaultLang(Lang);
+  SetDefaultLang(Lang, formMain.LangDir);
   formMain.actnTextUtils.Caption := formMain.actnNodeUtils.Caption;
 end;
 
