@@ -12,20 +12,20 @@ type
   { TformTextUtils }
 
   TformTextUtils = class(TForm)
-    pgctMain: TPageControl;
-    tabsScript: TTabSheet;
-    pnlScript: TPanel;
-    lstbScriptList: TListBox;
-    spltScript: TSplitter;
-    memoScript: TMemo;
-    editScriptName: TEdit;
-    bttnAddScript: TButton;
-    bttnDeleteScript: TButton;
-    bttnModifyScript: TButton;
-    chkbSearchInSelection: TCheckBox;
+    pgctMain              : TPageControl;
+    tabsScript            : TTabSheet;
+    pnlScript             : TPanel;
+    lstbScriptList        : TListBox;
+    spltScript            : TSplitter;
+    memoScript            : TMemo;
+    editScriptName        : TEdit;
+    bttnAddScript         : TButton;
+    bttnDeleteScript      : TButton;
+    bttnModifyScript      : TButton;
+    chkbSearchInSelection : TCheckBox;
 
-    bttnOK: TButton;
-    bttnCancel: TButton;
+    bttnOK                : TButton;
+    bttnCancel            : TButton;
 
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
@@ -58,7 +58,7 @@ resourcestring
 implementation
 
 uses
-  fmain, uconfig;
+  fmain, uconfig, ucommon;
 
 const
   ScriptFile = 'script.ini';
@@ -169,6 +169,11 @@ var
   Index: integer;
 begin
   if lstbScriptList.ItemIndex = -1 then Exit;
+
+  // hold Shift key to ignore warning
+  // if (not IsKeyDown(VK_SHIFT)) and (Application.MessageBox(PChar(Res_DelItemWarning), PChar(Caption), MB_YESNO + MB_ICONWARNING) <> ID_YES) then Exit;
+
+  // can't ignore warning
   if Application.MessageBox(PChar(Res_DelItemWarning), PChar(Caption), MB_YESNO + MB_ICONWARNING) <> ID_YES then Exit;
 
   FScripts.Delete(FScripts.IndexOfName(lstbScriptList.Items[lstbScriptList.ItemIndex]));
