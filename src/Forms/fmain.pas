@@ -653,7 +653,10 @@ procedure TformMain.MouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: 
 var
   Size: integer;
 begin
-  if editRename.Visible then editRename.Hide;
+  if editRename.Visible then begin
+    FEditHistory.Enabled := False;
+    editRename.Hide;
+  end;
 
   if not (ssCtrl in Shift) then Exit;
 
@@ -1027,11 +1030,19 @@ end;
 
 procedure TformMain.actnPrevNodeExecute(Sender: TObject);
 begin
+  if editRename.Visible then begin
+    FEditHistory.Enabled := False;
+    editRename.Hide;
+  end;
   SelectPrevNode;
 end;
 
 procedure TformMain.actnNextNodeExecute(Sender: TObject);
 begin
+  if editRename.Visible then begin
+    FEditHistory.Enabled := False;
+    editRename.Hide;
+  end;
   SelectNextNode;
 end;
 
@@ -1201,8 +1212,8 @@ begin
   if Key = VK_RETURN then begin
     editRename.OnExit(Sender);
   end else if Key = VK_ESCAPE then begin
-    editRename.Hide;
     FEditHistory.Enabled := False;
+    editRename.Hide;
     FLastNode.TreeView.SetFocus;
   end;
 end;
@@ -1212,6 +1223,7 @@ begin
   // 需要检查重命名框是否可见，否则会出错
   if not editRename.Visible then Exit;
   SubmitRename;
+  FEditHistory.Enabled := False;
   editRename.Hide;
   FLastNode.TreeView.SetFocus;
   FEditHistory.Enabled := False;
@@ -1439,7 +1451,10 @@ begin
 
   UpdateDBControlState;
 
-  if editRename.Visible then editRename.Hide;
+  if editRename.Visible then begin
+    FEditHistory.Enabled := False;
+    editRename.Hide;
+  end;
 end;
 
 procedure TformMain.DataStateChanged(ADataChanged: Boolean);
@@ -2710,7 +2725,6 @@ begin
     FLastNode.Text := editRename.Text;
     DataStateChanged(True);
   end;
-  FEditHistory.Enabled := False;
 end;
 
 procedure TformMain.SelectPrevNode;
