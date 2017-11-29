@@ -1233,7 +1233,7 @@ procedure TformMain.lstbInfoDblClick(Sender: TObject);
 var
   PSR: PSearchRecord;
   FixNum: Integer;
-  Str: string;
+  S: string;
 begin
   if lstbInfo.ItemIndex = -1 then Exit;
 
@@ -1249,12 +1249,12 @@ begin
     // 是 #13#10，长度不同，所以需要修补才能得到正确的 SelStart
     FixNum := 0;
     if Length(LineEnding) > 1 then begin
-      Str := FTreeDB.GetNote(PSR^.ID);
-      Str := UTF8Copy(Str, 1, PSR^.UStart);
-      FixNum := Str.CountChar(#10);
+      S := FTreeDB.GetNote(PSR^.ID);
+      S := UTF8Copy(S, 1, PSR^.UStart);
+      FixNum := S.CountChar(#10);
     end;
 
-    memoNote.SelStart := PSR^.UStart - 1 + FixNum;
+    memoNote.SelStart := PSR^.UStart + FixNum;
     memoNote.SelLength := PSR^.ULength;
   end;
 end;
@@ -1465,17 +1465,17 @@ end;
 
 procedure TformMain.UpdateCaption(ADataChanged: Boolean);
 var
-  Str: string;
+  S: string;
 begin
-  Str := Format('%s %s', [AppTitle, Version]);
+  S := Format('%s %s', [AppTitle, Version]);
 
   if FTreeDB.Active then begin
-    Str := Str + ' [' + FDBFileName + ']';
+    S := S + ' [' + FDBFileName + ']';
     if ADataChanged then
-      Str := Str + ' *';
+      S := S + ' *';
   end;
 
-  Caption := Str;
+  Caption := S;
 end;
 
 // debug
@@ -1616,7 +1616,7 @@ begin
   FMemoHistory.Enabled := True;
   memoNote.Lines.EndUpdate;
 
-  if APrevText.Length > Length(memoNote.Text) then
+  if Length(APrevText) > Length(memoNote.Text) then
     FMemoHistory.AddRecordSimply(APrevText);
 end;
 
@@ -2896,11 +2896,11 @@ begin
     AChanged := False;
     for i := 0 to Strs.Count - 1 do begin
       Line := Strs[i];
-      if Line.Length >= 4 then begin
-        case LowerCase(Line.Substring(0, 4)) of
-          'sch=': Sch := Line.Substring(4);
+      if Length(Line) >= 4 then begin
+        case LowerCase(Copy(Line, 1, 4)) of
+          'sch=': Sch := Copy(Line, 5, Length(Line) - 4);
           'rep=': if Sch <> '' then begin
-            Rep := Line.Substring(4);
+            Rep := Copy(Line, 5, Length(Line) - 4);
             AText := ReplaceRegExpr(Sch, AText, Rep, True);
             AChanged := True;
           end;
@@ -2910,7 +2910,7 @@ begin
     if AChanged then begin
       FMemoHistory.Enabled := False;
       if InSelection and (memoNote.SelLength <> 0) then begin
-        FMemoHistory.History.AddRecord(memoNote.SelStart, memoNote.SelLength, memoNote.SelText, memoNote.SelStart, UTF8Length(AText), AText);
+        FMemoHistory.History.AddRecord(memoNote.SelStart, memoNote.SelLength, memoNote.SelText, memoNote.SelStart, UTF8LengthFast(AText), AText);
         memoNote.SelText := AText
       end else begin
         memoNote.Text := AText;
@@ -3069,7 +3069,7 @@ begin
         Sample := UTF8Copy(ANote, 1, PSR^.ULength + 10)
       else
         Sample := UTF8Copy(ANote, PSR^.UStart - 10, PSR^.ULength + 20);
-      Sample := Sample.Replace(#10, ' ');
+      Sample := Sample.Replace(#10, ' ', [rfReplaceAll]);
 
       lstbInfo.Items.Add(Format('[%s] %s | (%d %d)', [AName, Sample, PSR^.UStart, PSR^.ULength]));
 

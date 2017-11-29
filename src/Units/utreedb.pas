@@ -1016,7 +1016,7 @@ var
     if Assigned(Children) and (Depth <> 0) then
     begin
       // 将节点导出为目录
-      ToDir := GetNotExistsPath(ToDir, Name, '', 3);
+      ToDir := GetNonExistsPath(ToDir, Name, '', 3);
       ForceDirectories(ToDir);
 
       // 保存节点的内容到文本文件
@@ -1029,7 +1029,7 @@ var
     else
     begin
       // 将节点导出为文本文件
-      WriteFile(GetNotExistsPath(ToDir, Name, Ext, 3), Note);
+      WriteFile(GetNonExistsPath(ToDir, Name, Ext, 3), Note);
     end;
   end;
 
@@ -1157,12 +1157,12 @@ var
     Dec(Depth);
 
     // 在节点名称中搜索
-    if IncludeName and (UTF8Search(ID, GetName(ID), ASearchText, IgnoreCase, nil, 1, 1) > 0) then
+    if IncludeName and (UTF8Pos(GetName(ID), ASearchText, IgnoreCase) > 0) then
       Rst.Add(ID, 0, 0);
 
     // 在节点内容中搜索
     if IncludeNote then
-      UTF8Search(ID, GetNote(ID), ASearchText, IgnoreCase, Rst);
+      UTF8SearchSpecial(ID, GetNote(ID), ASearchText, IgnoreCase, Rst);
 
     if Depth = 0 then Exit;
     for Child in GetChildren(ID) do
@@ -1205,14 +1205,14 @@ var
 
     if IncludeName then begin
       Count := Rst.Count;
-      NewName := UTF8Replace(ID, GetName(ID), ASearchText, AReplaceText, IgnoreCase, Rst);
+      NewName := UTF8ReplaceSpecial(ID, GetName(ID), ASearchText, AReplaceText, IgnoreCase, Rst);
       if Count < Rst.Count then
         SetName(ID, NewName);
     end;
 
     if IncludeNote then begin
       Count := Rst.Count;
-      NewNote := UTF8Replace(ID, GetNote(ID), ASearchText, AReplaceText, IgnoreCase, Rst);
+      NewNote := UTF8ReplaceSpecial(ID, GetNote(ID), ASearchText, AReplaceText, IgnoreCase, Rst);
       if Count < Rst.Count then
         SetNote(ID, NewNote);
     end;
@@ -1334,9 +1334,9 @@ var
 
       // 获取单个替换结果
       ReplacedOne := ReplaceRegExpr(ASearchText, Expr.Match[0], AReplaceText, True);
-      ReplacedLength := UTF8Length(ReplacedOne);
+      ReplacedLength := UTF8LengthFast(ReplacedOne);
 
-      ReplacedStart := ReplacedStart + UTF8Length(MiddleString);
+      ReplacedStart := ReplacedStart + UTF8LengthFast(MiddleString);
       Rst.Add(ID, ReplacedStart, ReplacedLength);
 
       Result := Result + MiddleString + ReplacedOne;
@@ -1406,5 +1406,6 @@ initialization
   // 为 SQLite3 控件指定一个动态链接库文件，如果未指定，则使用系统默认的动态链接库文件
   if FileExists(LibFile) then
     SQLiteDefaultLibrary := LibFile;
+
 end.
 

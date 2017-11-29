@@ -249,8 +249,8 @@ end;
 function THistory.GetRecordSize(Idx: integer): integer;
 begin
   Result :=
-    Items[Idx]^.PrevSelText.Length +
-    Items[Idx]^.SelText.Length +
+    Length(Items[Idx]^.PrevSelText) +
+    Length(Items[Idx]^.SelText) +
     Sizeof(THistoryRecord);
 end;
 
@@ -357,8 +357,8 @@ end;
 procedure THistoryManager.AddRecordSimply(APrevText: string);
 begin
   FHistory.AddRecord(
-    0, UTF8Length(APrevText), APrevText,
-    0, UTF8Length(FEdit.Text), FEdit.Text);
+    0, UTF8LengthFast(APrevText), APrevText,
+    0, UTF8LengthFast(FEdit.Text), FEdit.Text);
 end;
 
 // 记录 OnChange 之前的 SelStart
@@ -419,10 +419,10 @@ begin
   // Len < PrevLen 表示编辑框中删除了内容，此时 SelStart 应该在被删除的内容之前。
   // Len = PrevLen 不可能存在
   if Len > PrevLen then begin
-    // 计算出增加了什么内容（Substring 的参数是从索引 0 开始计数的）
-    SelText := string(FEdit.Text).Substring(BSelStart - (Len - PrevLen), (Len - PrevLen));
+    // 计算出增加了什么内容（Copy 的参数是从索引 1 开始计数的）
+    SelText := Copy(FEdit.Text, BSelStart - (Len - PrevLen) + 1, (Len - PrevLen));
     // 计算出增加了多少字符
-    SelLength := UTF8Length(SelText);
+    SelLength := UTF8LengthFast(SelText);
 
     PHR^.PrevSelStart := FEdit.SelStart - SelLength;
     PHR^.PrevSelLength := 0;
@@ -432,10 +432,10 @@ begin
     PHR^.SelLength := SelLength;
     PHR^.SelText := SelText;
   end else if Len < PrevLen then begin
-    // 计算出删除了什么内容（Substring 的参数是从索引 0 开始计数的）
-    SelText := FPrevText.Substring(BSelStart, (PrevLen - Len));
+    // 计算出删除了什么内容（Copy 的参数是从索引 1 开始计数的）
+    SelText := Copy(FPrevText, BSelStart + 1, (PrevLen - Len));
     // 计算出删除了多少字符
-    SelLength := UTF8Length(SelText);
+    SelLength := UTF8LengthFast(SelText);
 
     PHR^.PrevSelStart := FEdit.SelStart;
     PHR^.PrevSelLength := SelLength;
@@ -489,28 +489,26 @@ begin
     begin
       // 获取 PrevSelStart 的字节索引。
       // UTF8CharToByteIndex 的参数和结果是从索引 0 开始计数的。
-      BPrevSelStart := UTF8CharToByteIndex(PChar(FPrevText), FPrevText.Length, FPrevSelStart);
+      BPrevSelStart := UTF8CharToByteIndex(PChar(FPrevText), Length(FPrevText), FPrevSelStart);
       // 获取新增内容的字节长度
-      BSelLength := Length(FEdit.Text) - FPrevText.Length;
-      PrevSelText := FPrevText.Substring(BPrevSelStart, BSelLength);
+      BSelLength := Length(FEdit.Text) - Length(FPrevText);
+      PrevSelText := Copy(FPrevText, BPrevSelStart + 1, BSelLength);
       // 准备查找的起始位置（索引从 1 开始，跳过已选择的部分）。
       BSelStartFix := BPrevSelStart + BSelLength + 1;
       BSelStartFix2 := BSelStartFix;
       // 向尾查找不同之处（即新内容的插入位置，返回值索引从 1 开始）。
       // 如果没有不同之处，则说明新内容被插入到文本的尾部。
       UTF8DiffBytePos(FEdit.Text, FPrevText, BSelStartFix, BSelStartFix2);
-      // 将索引恢复到从 0 开始。BSelStartFix2 和 BSelStartFix 相同，用不上。
-      Dec(BSelStartFix);
       // 获取新增加的内容（新增加的内容不一定就是之前选择的内容，比如 a++b++c++，
       // 当把 +b+ 拖到 c+ 之后，就会出现这种情况）。
-      // Substring 的参数是从索引 0 开始计数的。
-      SelText := string(FEdit.Text).Substring(BSelStartFix, BSelLength);
+      // Copy 的参数是从索引 1 开始计数的。
+      SelText := Copy(FEdit.Text, BSelStartFix, BSelLength);
       while PrevSelText <> SelText do begin
         Dec(BSelStartFix);
-        SelText := string(FEdit.Text).Substring(BSelStartFix, BSelLength);
+        SelText := Copy(FEdit.Text, BSelStartFix, BSelLength);
       end;
       // 计算正确的 SelStart。
-      SelStart := FPrevSelStart + UTF8Length(PChar(FPrevText) + BPrevSelStart, BSelStartFix - BPrevSelStart);
+      SelStart := FPrevSelStart + UTF8LengthFast(PChar(FPrevText) + BPrevSelStart, BSelStartFix - BPrevSelStart - 1);
     end
     else if FEdit.SelStart > FPrevSelStart then
     // SelStart 发生了偏移，执行的是向头拖拽，接下来要从 SelStart 处开始向头比
@@ -518,10 +516,10 @@ begin
     begin
       // 获取 PrevSelStart 的字节索引。
       // UTF8CharToByteIndex 的参数和结果是从索引 0 开始计数的。
-      BPrevSelStart := UTF8CharToByteIndex(PChar(FPrevText), FPrevText.Length, FPrevSelStart);
+      BPrevSelStart := UTF8CharToByteIndex(PChar(FPrevText), Length(FPrevText), FPrevSelStart);
       // 获取新增内容的字节长度
-      BSelLength := Length(FEdit.Text) - FPrevText.Length;
-      PrevSelText := FPrevText.Substring(BPrevSelStart, BSelLength);
+      BSelLength := Length(FEdit.Text) - Length(FPrevText);
+      PrevSelText := Copy(FPrevText, BPrevSelStart + 1, BSelLength);
       // 准备查找的起始位置（索引从 1 开始，跳过已选择的部分）。
       BSelStartFix := BPrevSelStart + BSelLength + 1; // FEdit.Text 偏移后的 SelStart
       BSelStartFix2 := BPrevSelStart + 1;             // FPrevSelStart
@@ -534,25 +532,23 @@ begin
         SelText := PrevSelText;
       end
       else begin
-        // 将索引恢复到从 0 开始。
-        Dec(BSelStartFix);
         // 跳过找到的不同的字符
-        BSelStartFix := BSelStartFix + UTF8CharacterLength(PChar(FEdit.Text) + BSelStartFix);
+        BSelStartFix := BSelStartFix + UTF8CharacterLength(PChar(FEdit.Text) + BSelStartFix - 1);
         // 获取新增加的内容（新增加的内容不一定就是之前选择的内容，比如 a++b++c++，
         // 当把 +c+ 拖到 b+ 之前，就会出现这种情况）。
-        // Substring 的参数是从索引 0 开始计数的。
-        if BSelStartFix < BSelLength then BSelStartFix := BSelLength;
+        // Copy 的参数是从索引 1 开始计数的。
+        if BSelStartFix <= BSelLength then BSelStartFix := BSelLength + 1;
         // 将 BSelStartFix 定位到新添加文本的开头位置
         Dec(BSelStartFix, BSelLength);
         // 获取新添加的文本
-        SelText := string(FEdit.Text).Substring(BSelStartFix, BSelLength);
+        SelText := Copy(FEdit.Text, BSelStartFix, BSelLength);
         // 修补错误的结果
         while (PrevSelText <> SelText) do begin
           Inc(BSelStartFix);
-          SelText := string(FEdit.Text).Substring(BSelStartFix, BSelLength);
+          SelText := Copy(FEdit.Text, BSelStartFix, BSelLength);
         end;
         // 计算正确的 SelStart
-        SelStart := FPrevSelStart - UTF8Length(PChar(FPrevText) + BSelStartFix, BPrevSelStart - BSelStartFix);
+        SelStart := FPrevSelStart - UTF8LengthFast(PChar(FPrevText) + BSelStartFix - 1, BPrevSelStart - BSelStartFix + 1);
       end;
     end else begin
       ShowMessage('CalcRecordGTK2Memo: History Record Error !');
@@ -565,7 +561,7 @@ begin
 
     PHR^.SelStart      := PHR^.PrevSelStart;
     PHR^.SelText       := SelText;
-    PHR^.SelLength     := UTF8Length(SelText);
+    PHR^.SelLength     := UTF8LengthFast(SelText);
 
     {$ifdef DEBUG}
     // 太长的内容会导致输出信息时间过长
@@ -576,7 +572,7 @@ begin
     writeln('CalcRecordGTK2Memo: AddOrDel: ', SelText.Replace(#10, '_'), ' | ', SelStart, ' ', PHR^.SelLength);
     writeln('------------------------------')
     {$endif}
-  end else if (FEdit.SelStart = FPrevSelStart) and (Length(FEdit.Text) > FPrevText.Length) then
+  end else if (FEdit.SelStart = FPrevSelStart) and (Length(FEdit.Text) > Length(FPrevText)) then
     CalcRecordHard(PHR)
   else if FEdit.SelStart - FPrevSelStart > 1 then // 粘贴的情况已经在之前被拦截了
      CalcRecordHard(PHR)
@@ -601,9 +597,9 @@ begin
   if Len > PrevLen then begin
     // Add content to FEdit
     Dec(SelStart);
-    SelText := string(FEdit.Text).Substring(SelStart, (Len - PrevLen));
-    SelLength := UTF8Length(SelText);
-    SelStart := UTF8Length(PChar(FEdit.Text), SelStart);
+    SelText := Copy(FEdit.Text, SelStart + 1, (Len - PrevLen));
+    SelLength := UTF8LengthFast(SelText);
+    SelStart := UTF8LengthFast(PChar(FEdit.Text), SelStart);
 
     PHR^.PrevSelStart := SelStart;
     PHR^.PrevSelLength := 0;
@@ -614,9 +610,9 @@ begin
     PHR^.SelText := SelText;
   end else if Len < PrevLen then begin
     Dec(PrevSelStart);
-    SelText := FPrevText.Substring(PrevSelStart, (PrevLen - Len));
-    SelLength := UTF8Length(SelText);
-    SelStart := UTF8Length(PChar(FPrevText), PrevSelStart);
+    SelText := Copy(FPrevText, PrevSelStart + 1, (PrevLen - Len));
+    SelLength := UTF8LengthFast(SelText);
+    SelStart := UTF8LengthFast(PChar(FPrevText), PrevSelStart);
 
     PHR^.PrevSelStart := SelStart;
     PHR^.PrevSelLength := SelLength;
@@ -629,7 +625,7 @@ begin
     ShowMessage('CalcRecordHard: History Record Error !');
     Exit;
   end;
-  if (FEdit.SelLength > 0) and (Length(FEdit.Text) > FPrevText.Length) then begin
+  if (FEdit.SelLength > 0) and (Length(FEdit.Text) > Length(FPrevText)) then begin
     PHR^.HalfRecord := hrFirstHalf;
     FHalfRecord := True;
   end else if FHalfRecord then begin
@@ -731,11 +727,12 @@ begin
   SelStart  := FEdit.SelStart;
   SelLength := FEdit.SelLength;
   SelText   := FEdit.SelText;
-  ClipBoardText := ToLF(ClipBoard.AsText);;
+  ClipBoardText := ClipBoard.AsText;
 
   Enabled := False;
-  FEdit.SelText := ClipBoardText;
-  FHistory.AddRecord(SelStart, SelLength, SelText, SelStart, UTF8Length(ClipBoardText), ClipBoardText);
+  FEdit.PasteFromClipboard;
+  // FEdit.SelText := ClipBoardText;
+  FHistory.AddRecord(SelStart, SelLength, SelText, SelStart, UTF8LengthFast(ClipBoardText), ClipBoardText);
   FPrevText := FEdit.Text;
   Enabled := True;
 end;
@@ -783,7 +780,7 @@ end;
 
 function THistoryManager.GetTotalSize: integer;
 begin
-  Result := FTotalSize + Size + FPrevText.Length;
+  Result := FTotalSize + Size + Length(FPrevText);
 end;
 
 procedure THistoryManager.SetEnabled(AValue: boolean);

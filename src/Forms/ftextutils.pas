@@ -168,22 +168,24 @@ procedure TformTextUtils.bttnDeleteScriptClick(Sender: TObject);
 var
   Index: integer;
 begin
-  if lstbScriptList.ItemIndex = -1 then Exit;
+  Index := lstbScriptList.ItemIndex;
 
+  if Index = -1 then Exit;
+
+  {
   // hold Shift key to ignore warning
-  // if (not IsKeyDown(VK_SHIFT)) and (Application.MessageBox(PChar(Res_DelItemWarning), PChar(Caption), MB_YESNO + MB_ICONWARNING) <> ID_YES) then Exit;
+  if (not IsKeyDown(VK_SHIFT)) and (Application.MessageBox(PChar(Res_DelItemWarning), PChar(Caption), MB_YESNO + MB_ICONWARNING) <> ID_YES) then Exit;
+  }
 
   // can't ignore warning
   if Application.MessageBox(PChar(Res_DelItemWarning), PChar(Caption), MB_YESNO + MB_ICONWARNING) <> ID_YES then Exit;
 
-  FScripts.Delete(FScripts.IndexOfName(lstbScriptList.Items[lstbScriptList.ItemIndex]));
+  FScripts.Delete(FScripts.IndexOfName(lstbScriptList.Items[Index]));
 
-  Index := lstbScriptList.ItemIndex;
-
-  if FLastScriptName = lstbScriptList.Items[lstbScriptList.ItemIndex] then
+  if FLastScriptName = lstbScriptList.Items[Index] then
     FLastScriptName := '';
 
-  lstbScriptList.DeleteSelected;
+  lstbScriptList.Items.Delete(Index);
 
   if lstbScriptList.Count - 1 >= Index then
     lstbScriptList.ItemIndex := Index
@@ -235,7 +237,7 @@ begin
           lstbScriptList.Items.Add(Title);
           Content := '';
         end;
-        Title := Line.Substring(1, Length(Line) - 2);
+        Title := Copy(Line, 2, Length(Line) - 2);
       end else if Content = '' then
         Content := Line
       else
@@ -299,3 +301,4 @@ begin
 end;
 
 end.
+
