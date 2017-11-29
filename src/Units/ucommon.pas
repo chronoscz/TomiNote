@@ -5,7 +5,7 @@ unit ucommon;
 interface
 
 uses
-  Classes, SysUtils, LCLIntf, lazUTF8;
+  Classes, SysUtils, LCLIntf, StrUtils;
 
 type
 
@@ -16,8 +16,6 @@ type
     UStart  : SizeInt;  // UTF8 Start
     ULength : SizeInt;  // UTF8 Length
   end;
-
-  PSearchResult = ^TSearchResult;
 
   TSearchResult = class
   private
@@ -37,35 +35,42 @@ type
 
 function IsKeyDown(AKey: integer): boolean; inline;
 
-function StartsWith(Str, SubStr: string; StartPos: SizeInt):boolean;
-function EndsWith(Str, SubStr: string; EndPos: SizeInt):boolean;
-function UTF8TrimLeft(Str: string; SubStrs: array of string): string;
-function UTF8TrimRight(Str: string; SubStrs: array of string): string;
-function UTF8TrimString(Str: string; SubStrs: array of string): string;
-function UTF8TrimSpace(Str: string): string;
+function StartsWith(S, SubStr: string; StartPos: SizeInt):boolean;
+function EndsWith(S, SubStr: string; EndPos: SizeInt):boolean;
+function UTF8TrimLeft(S: string; SubStrs: array of string): string;
+function UTF8TrimRight(S: string; SubStrs: array of string): string;
+function UTF8TrimString(S: string; SubStrs: array of string): string;
+function UTF8TrimSpace(S: string): string;
 
-function UTF8Search(ID: integer; const AText, ASearchText: string;
-  IgnoreCase: boolean; Rst: TSearchResult; StartUPos: SizeInt = 1;
-  SearchULen: SizeInt = 0; SearchCount: integer = 0): PtrInt;
+function UTF8LengthFast(S: PChar; SSize: SizeInt): SizeInt;
+function UTF8LengthFast(S: string): SizeInt;
 
-function UTF8Replace(ID: integer; const AText, ASearchText, AReplaceText: string;
-  IgnoreCase: boolean; Rst: TSearchResult; StartUPos: SizeInt = 1;
-  SearchULen: SizeInt = 0; SearchCount: integer = 0): string;
+function UTF8Pos(const S,OldPattern: String; const IgnoreCase: Boolean = False): SizeInt;
 
-function UTF8DiffBytePos(Str1, Str2: string; var Start1, Start2: SizeInt; Reverse: boolean = False): boolean;
-function UTF8Diff(Str1, Str2: string; var Start1, Start2: SizeInt; Reverse: boolean = False): boolean;
+procedure UTF8FindMatches(const S,OldPattern: String; out aMatches: SizeIntArray;
+  const aMatchAll: Boolean = False; const IgnoreCase: Boolean = False);
+function UTF8ReplaceMatches(const S, OldPattern, NewPattern: string; out aMatches: SizeIntArray;
+  const aMatchAll: Boolean = False; const IgnoreCase: Boolean = False): string;
 
-function ToLF(Str: string): string;
-function ToLineEnding(Str: string): string;
+procedure UTF8SearchSpecial(ID: integer; const AText, ASearchText: string;
+  IgnoreCase: boolean; Rst: TSearchResult);
+function UTF8ReplaceSpecial(ID: integer; const AText, ASearchText, AReplaceText: string;
+  IgnoreCase: boolean; Rst: TSearchResult): string;
 
-function Escape(Str: string): string;
-function UnEscape(Str: string): string;
+function UTF8DiffBytePos(S1, S2: string; var Start1, Start2: SizeInt; Reverse: boolean = False): boolean;
+
+function ToLF(S: string): string;
+function ToLineEnding(S: string): string;
+
+// function Escape_Abandoned(S: string): string;
+function Escape(S: string): string;
+function UnEscape(S: string): string;
 
 function ReadFile(FileName: string): string;
 procedure WriteFile(FileName: string; Text: string);
 
 function FixFileName(FileName: string): string;
-function GetNotExistsPath(ToDir, FileName, FileExt: string; LenSuffix: integer): string;
+function GetNonExistsPath(ToDir, FileName, FileExt: string; LenSuffix: integer): string;
 procedure FindFiles(APath: string; Rst: TStringList);
 
 implementation
@@ -140,18 +145,18 @@ begin
   Result := GetKeyState(AKey) < 0;
 end;
 
-// 判断 SubStr 是否在 Str 中，并且开始于 StartPos 位置
-function StartsWith(Str, SubStr: string; StartPos: SizeInt):boolean;
+// 判断 SubStr 是否在 S 中，并且开始于 StartPos 位置
+function StartsWith(S, SubStr: string; StartPos: SizeInt):boolean;
 var
   c: Char;
 begin
-  if Str.Length - StartPos + 1 < SubStr.Length then begin
+  if Length(S) - StartPos + 1 < Length(SubStr) then begin
     Result := False;
     Exit;
   end;
 
   for c in SubStr do begin
-    if c = Str[StartPos] then
+    if c = S[StartPos] then
       Inc(StartPos)
     else begin
       Result := False;
@@ -161,19 +166,19 @@ begin
   Result := True;
 end;
 
-// 判断 SubStr 是否在 Str 中，并且结束于 EndPos 位置
-function EndsWith(Str, SubStr: string; EndPos: SizeInt):boolean;
+// 判断 SubStr 是否在 S 中，并且结束于 EndPos 位置
+function EndsWith(S, SubStr: string; EndPos: SizeInt):boolean;
 var
   c: Char;
 begin
-  if EndPos < SubStr.Length then begin
+  if EndPos < Length(SubStr) then begin
     Result := False;
     Exit;
   end;
 
-  EndPos := EndPos - SubStr.Length + 1;
+  EndPos := EndPos - Length(SubStr) + 1;
   for c in SubStr do begin
-    if c = Str[EndPos] then
+    if c = S[EndPos] then
       Inc(EndPos)
     else begin
       Result := False;
@@ -184,9 +189,9 @@ begin
 end;
 
 // 删除 UTF8 字符串左边的指定子字符串
-function UTF8TrimLeft(Str: string; SubStrs: array of string): string;
+function UTF8TrimLeft(S: string; SubStrs: array of string): string;
 var
-  s: string;
+  SS: string;
   NotFound: boolean;
   StartPos: SizeInt;
 begin
@@ -194,34 +199,34 @@ begin
   StartPos := 1;
   repeat
     NotFound := True;
-    for s in SubStrs do begin
-      if StartsWith(Str, s, StartPos) then begin
-        Inc(StartPos, s.Length);
+    for SS in SubStrs do begin
+      if StartsWith(S, SS, StartPos) then begin
+        Inc(StartPos, Length(SS));
         NotFound := False;
       end;
     end;
   until NotFound;
 
-  if StartPos > Str.Length then
+  if StartPos > Length(S) then
     Result := ''
   else
-    Result := Str.Substring(StartPos - 1, Str.Length - StartPos + 1);
+    Result := Copy(S, StartPos, Length(S) - StartPos + 1);
 end;
 
 // 删除 UTF8 字符串右边的指定子字符串
-function UTF8TrimRight(Str: string; SubStrs: array of string): string;
+function UTF8TrimRight(S: string; SubStrs: array of string): string;
 var
-  s: string;
+  SS: string;
   NotFound: boolean;
   EndPos: SizeInt;
 begin
   Result := '';
-  EndPos := Str.Length;
+  EndPos := Length(S);
   repeat
     NotFound := True;
-    for s in SubStrs do begin
-      if EndsWith(Str, s, EndPos) then begin
-        Dec(EndPos, s.Length);
+    for SS in SubStrs do begin
+      if EndsWith(S, SS, EndPos) then begin
+        Dec(EndPos, Length(SS));
         NotFound := False;
       end;
     end;
@@ -230,24 +235,24 @@ begin
   if EndPos < 1 then
     Result := ''
   else
-    Result := Str.Substring(0, EndPos);
+    Result := Copy(S, 1, EndPos);
 end;
 
 // 删除 UTF8 字符串首尾的指定子字符串
-function UTF8TrimString(Str: string; SubStrs: array of string): string;
+function UTF8TrimString(S: string; SubStrs: array of string): string;
 var
-  s: string;
+  SS: string;
   NotFound: boolean;
   StartPos, EndPos: SizeInt;
 begin
   Result := '';
   StartPos := 1;
-  EndPos := Str.Length;
+  EndPos := Length(S);
   repeat
     NotFound := True;
-    for s in SubStrs do begin
-      if StartsWith(Str, s, StartPos) then begin
-        Inc(StartPos, s.Length);
+    for SS in SubStrs do begin
+      if StartsWith(S, SS, StartPos) then begin
+        Inc(StartPos, Length(SS));
         NotFound := False;
       end;
     end;
@@ -255,9 +260,9 @@ begin
 
   repeat
     NotFound := True;
-    for s in SubStrs do begin
-      if EndsWith(Str, s, EndPos) then begin
-        Dec(EndPos, s.Length);
+    for SS in SubStrs do begin
+      if EndsWith(S, SS, EndPos) then begin
+        Dec(EndPos, Length(SS));
         NotFound := False;
       end;
     end;
@@ -266,197 +271,270 @@ begin
   if EndPos < StartPos then
     Result := ''
   else
-    Result := Str.Substring(StartPos - 1, EndPos - StartPos + 1);
+    Result := Copy(S, StartPos, EndPos - StartPos + 1);
 end;
 
 // 删除 UTF8 字符串首尾的空白字符
-function UTF8TrimSpace(Str: string): string;
+function UTF8TrimSpace(S: string): string;
 begin
-  Result := UTF8TrimString(Str, [' ', '　', #13, #10, #9]);
+  Result := UTF8TrimString(S, [' ', '　', #13, #10, #9]);
 end;
 
-// 查找字符串，如果去掉参数 ID 就是一个通用函数
-// AText      ：要在其中进行搜索的源字符串
-// ASearchText：要搜索的内容
-// IgnoreCase ：忽略大小写
-// Rst        ：用来存放搜索结果的 TSearchResult 对象（如果 为 nil 则不记录搜索结果）
-// StartUPos  ：搜索的起始字符位置（从 1 开始，不是字节位置）
-// SearchULen ：搜索的长度，从 StartUPos 开始，到达此长度则停止搜索，0表示无限制
-// SearchCount：搜索的次数，匹配指定次数后则停止搜索，0表示无限制
-// 返回值：最后一个查找结果的起始位置
-function UTF8Search(ID: integer; const AText, ASearchText: string;
-  IgnoreCase: boolean; Rst: TSearchResult;
-  StartUPos: SizeInt = 1; SearchULen: SizeInt = 0; SearchCount: integer = 0): PtrInt;
+// 比 lazUTF8.UTF8LengthFast 慢，但比 lazUTF8.UTF8Length 快
+// lazUTF8.UTF8LengthFast 不能用在这里，会得到错误的值。
+function UTF8LengthFast(S: PChar; SSize: SizeInt): SizeInt;
 var
-  b1, b2: byte;
-  BPos, SubBPos: SizeInt;
-  UPos, UStart, ULength: SizeInt;
+  Pos: Integer;
 begin
-  Result  := 0;
-
-  // 安全检查
-  if (StartUPos <= 0) or (AText.Length < ASearchText.Length) then Exit;
-
-  BPos    := 1;
-  SubBPos := 1;
-  UStart  := 1;
-  UPos    := 0;
-
-  // 在这里处理起始位置（跳过指定个数的 UTF8 字符）
-  while BPos <= AText.Length do begin
-    b1 := Ord(AText[BPos]) shr 6;
-    if (b1 = 3) or (b1 shr 1 = 0) then Inc(UPos);
-
-    if UPos = StartUPos then break;
-    Inc(BPos);
-  end;
-
-  // 安全检查
-  if BPos > AText.Length then Exit;
-
-  Dec(UPos);
-  ULength := UTF8Length(ASearchText);
-
-  // 按字节遍历
-  for BPos := BPos to AText.Length do begin
-    b1 := Ord(AText[BPos]);
-    b2 := Ord(ASearchText[SubBPos]);
-    // 遇到一个 UTF8 字符
-    if (b1 shr 6 = 3) or (b1 shr 7 = 0) then begin
-      Inc(UPos);
-      Dec(SearchULen);
+  Result := 0;
+  Pos    := 0;
+  while Pos < SSize do begin
+    case S[Pos] of
+        #0  ..#127: Inc(Pos);
+        #192..#223: Inc(Pos, 2);
+        #224..#239: Inc(Pos, 3);
+        #240..#247: Inc(Pos, 4);
+        else begin Inc(Pos); continue; end;
     end;
-
-    if (b1 = b2) or IgnoreCase and ((b1 >= 97) and (b1 <= 122) and (b1 - b2 = 32) or (b1 >= 65) and (b1 <= 90) and (b2 - b1 = 32)) then begin
-      // 首字节匹配
-      if SubBPos = 1 then UStart := UPos;
-      // 完全匹配
-      if SubBPos = ASearchText.Length then begin
-        Result := UStart;
-        SubBPos := 0;
-        if Rst <> nil then Rst.Add(ID, UStart, ULength);
-        // 这里处理次数限制
-        Dec(SearchCount);
-        if SearchCount = 0 then Exit;
-      end;
-      Inc(SubBPos);
-    end else
-      SubBPos := 1;
-    // 在这里处理长度限制
-    if SearchULen = 0 then break;
+    Inc(Result);
   end;
 end;
 
-// 替换字符串，如果去掉参数 ID 就是一个通用函数
-// AText       ：要在其中进行搜索的源字符串
-// ASearchText ：要搜索的内容
-// AReplaceText：用来替换的内容
-// IgnoreCase  ：忽略大小写
-// Rst         ：用来存放搜索结果的 TSearchResult 对象（如果 为 nil 则不记录搜索结果）
-// StartUPos   ：搜索的起始字符位置（从 1 开始，不是字节位置）
-// SearchULen  ：搜索的长度，从 StartUPos 开始，到达此长度则停止搜索，0表示无限制
-// SearchCount ：搜索的次数，匹配指定次数后则停止搜索，0表示无限制
-// 返回值：最后一个查找结果的起始位置
-function UTF8Replace(ID: integer; const AText, ASearchText, AReplaceText: string;
-  IgnoreCase: boolean; Rst: TSearchResult;
-  StartUPos: SizeInt = 1; SearchULen: SizeInt = 0; SearchCount: integer = 0): string;
+function UTF8LengthFast(S: string): SizeInt;
+begin
+  if S = '' then
+    Result := 0
+  else
+    Result := UTF8LengthFast(@S[1], Length(S));
+end;
+
+// 索引从 0 开始
+procedure FindMatches(const S,OldPattern: String; out aMatches: SizeIntArray;
+  const aMatchAll: Boolean = False; const IgnoreCase: Boolean = False);
+begin
+  if IgnoreCase then begin
+    FindMatchesBoyerMooreCaseINSensitive(@S[1],@OldPattern[1],Length(S),Length(OldPattern),aMatches, aMatchAll);
+  end else begin
+    FindMatchesBoyerMooreCaseSensitive(@S[1],@OldPattern[1],Length(S),Length(OldPattern),aMatches, aMatchAll);
+  end;
+end;
+
+// 索引从 0 开始
+function ReplaceMatches(const S, OldPattern, NewPattern: string; out aMatches: SizeIntArray;
+  const aMatchAll: Boolean = False; const IgnoreCase: Boolean = False): string;
 var
-  b1, b2: byte;
-  BPos, SubBPos, BStart, LastBStart: SizeInt;
-  UPos, UStart, ULength, ULengthFix: SizeInt;
-  Count: integer;
+  OldPatternSize: SizeInt;
+  NewPatternSize: SizeInt;
+  MatchesCount: SizeInt;
+  MatchIndex: SizeInt;
+  MatchTarget: SizeInt;
+  MatchInternal: SizeInt;
+  AdvanceIndex: SizeInt;
 begin
-  Result := AText;
-
-  // 安全检查
-  if (StartUPos <= 0) or (AText.Length < ASearchText.Length) then Exit;
-
-  BPos    := 1;
-  SubBPos := 1;
-  UStart  := 1;
-  UPos    := 0;
-
-  // 跳过指定个数的 UTF8 字符
-  while BPos <= AText.Length do begin
-    b1 := Ord(AText[BPos]) shr 6;
-    if (b1 = 3) or (b1 shr 1 = 0) then Inc(UPos);
-
-    if UPos = StartUPos then break;
-    Inc(BPos);
+  OldPatternSize:=Length(OldPattern);
+  NewPatternSize:=Length(NewPattern);
+  if (OldPattern='') or (Length(OldPattern)>Length(S)) then begin
+    Result:=S;
+    exit;
   end;
 
-  // 安全检查
-  if BPos > AText.Length then Exit;
+  if IgnoreCase then begin
+    FindMatchesBoyerMooreCaseINSensitive(@S[1],@OldPattern[1],Length(S),Length(OldPattern),aMatches, aMatchAll);
+  end else begin
+    FindMatchesBoyerMooreCaseSensitive(@S[1],@OldPattern[1],Length(S),Length(OldPattern),aMatches, aMatchAll);
+  end;
 
-  Dec(UPos);
-  Result := '';
-  Count := 0;
-  LastBStart := 1;
-  ULength := UTF8Length(AReplaceText);
-  ULengthFix := UTF8Length(AReplaceText) - UTF8Length(ASearchText);
+  MatchesCount:=Length(aMatches);
 
-  // 按字节遍历
-  for BPos := BPos to AText.Length do begin
-    b1 := Ord(AText[BPos]);
-    b2 := Ord(ASearchText[SubBPos]);
-    // 遇到一个 UTF8 字符
-    if (b1 shr 6 = 3) or (b1 shr 7 = 0) then begin
-      Inc(UPos);
-      Dec(SearchULen);
+  //Create room enougth for the result string
+  SetLength(Result,Length(S)-OldPatternSize*MatchesCount+NewPatternSize*MatchesCount);
+  MatchIndex:=1;
+  MatchTarget:=1;
+  //aMatches[x] are 0 based offsets
+  for MatchInternal := 0 to Pred(MatchesCount) do begin
+    //Copy information up to next match
+    AdvanceIndex:=aMatches[MatchInternal]+1-MatchIndex;
+    if AdvanceIndex>0 then begin
+      move(S[MatchIndex],Result[MatchTarget],AdvanceIndex);
+      inc(MatchTarget,AdvanceIndex);
+      inc(MatchIndex,AdvanceIndex);
+      aMatches[MatchInternal] := MatchTarget - 1;
     end;
-
-    if (b1 = b2) or IgnoreCase and ((b1 >= 97) and (b1 <= 122) and (b1 - b2 = 32) or (b1 >= 65) and (b1 <= 90) and (b2 - b1 = 32)) then begin
-      // 首字节匹配
-      if SubBPos = 1 then begin
-        BStart := BPos;
-        UStart := UPos + ULengthFix * Count;
-      end;
-      // 完全匹配
-      if SubBPos = ASearchText.Length then begin
-        Result := Result + AText.Substring(LastBStart - 1, BStart - LastBStart) + AReplaceText;
-        LastBStart := BPos + 1;
-        SubBPos := 0;
-        if Rst <> nil then Rst.Add(ID, UStart, ULength);
-        Inc(Count);
-        // 这里处理次数限制
-        if Count = SearchCount then break;
-      end;
-      Inc(SubBPos);
-    end else
-      SubBPos := 1;
-    // 在这里处理长度限制
-    if SearchULen = 0 then break;
+    //Copy the new replace information string
+    if NewPatternSize>0 then begin
+      move(NewPattern[1],Result[MatchTarget],NewPatternSize);
+      inc(MatchTarget,NewPatternSize);
+    end;
+    inc(MatchIndex,OldPatternSize);
   end;
-  if LastBStart < AText.Length then
-    Result := Result + AText.Substring(LastBStart - 1);
+  if MatchTarget<=Length(Result) then begin
+    //Add remain data at the end of source.
+    move(S[MatchIndex],Result[MatchTarget],Length(Result)-MatchTarget+1);
+  end;
 end;
 
-// 查找 Str1 和 Str2 的不同之处，参数和返回值的索引都是从 1 开始，到 Length(Str) 结束。
-// Start1 表示 Str1 的起始查找位置，查找结果也通过该参数返回。
-// Start2 表示 Str2 的起始查找位置，查找结果也通过该参数返回。
+// 索引从 0 开始
+procedure UTF8FindMatches(const S,OldPattern: String; out aMatches: SizeIntArray;
+  const aMatchAll: Boolean = False; const IgnoreCase: Boolean = False);
+var
+  OldPatternSize: SizeInt;
+  MatchesCount: SizeInt;
+  MatchIndex: SizeInt;
+  MatchInternal: SizeInt;
+  AdvanceIndex: SizeInt;
+  MarchIndexU: SizeInt;
+  OldPatternSizeU: SizeInt;
+begin
+  if IgnoreCase then begin
+    FindMatchesBoyerMooreCaseINSensitive(@S[1],@OldPattern[1],Length(S),Length(OldPattern),aMatches, aMatchAll);
+  end else begin
+    FindMatchesBoyerMooreCaseSensitive(@S[1],@OldPattern[1],Length(S),Length(OldPattern),aMatches, aMatchAll);
+  end;
+
+  MatchesCount:=Length(aMatches);
+
+  //Create room enougth for the result string
+  MatchIndex:=1;
+  MarchIndexU:=0;
+  OldPatternSize:=Length(OldPattern);
+  OldPatternSizeU:=UTF8LengthFast(PChar(OldPattern), Length(OldPattern));
+  //aMatches[x] are 0 based offsets
+  for MatchInternal := 0 to Pred(MatchesCount) do begin
+    AdvanceIndex:=aMatches[MatchInternal]+1-MatchIndex;
+    Inc(MarchIndexU, UTF8LengthFast(@S[MatchIndex], AdvanceIndex));
+    inc(MatchIndex,AdvanceIndex);
+    aMatches[MatchInternal] := MarchIndexU;
+    Inc(MarchIndexU, OldPatternSizeU);
+    inc(MatchIndex,OldPatternSize);
+  end;
+end;
+
+// 索引从 0 开始
+function UTF8ReplaceMatches(const S, OldPattern, NewPattern: string; out aMatches: SizeIntArray;
+  const aMatchAll: Boolean = False; const IgnoreCase: Boolean = False): string;
+var
+  OldPatternSize: SizeInt;
+  NewPatternSize: SizeInt;
+  MatchesCount: SizeInt;
+  MatchIndex: SizeInt;
+  MatchTarget: SizeInt;
+  MatchInternal: SizeInt;
+  AdvanceIndex: SizeInt;
+  MarchTargetU: SizeInt;
+  NewPatternSizeU: SizeInt;
+begin
+  OldPatternSize:=Length(OldPattern);
+  NewPatternSize:=Length(NewPattern);
+  if (OldPattern='') or (Length(OldPattern)>Length(S)) then begin
+    Result:=S;
+    exit;
+  end;
+
+  if IgnoreCase then begin
+    FindMatchesBoyerMooreCaseINSensitive(@S[1],@OldPattern[1],Length(S),Length(OldPattern),aMatches, aMatchAll);
+  end else begin
+    FindMatchesBoyerMooreCaseSensitive(@S[1],@OldPattern[1],Length(S),Length(OldPattern),aMatches, aMatchAll);
+  end;
+
+  MatchesCount:=Length(aMatches);
+
+  //Create room enougth for the result string
+  SetLength(Result,Length(S)-OldPatternSize*MatchesCount+NewPatternSize*MatchesCount);
+  MatchIndex:=1;
+  MatchTarget:=1;
+  MarchTargetU:=0;
+  NewPatternSizeU:=UTF8LengthFast(PChar(NewPattern), Length(NewPattern));
+  //aMatches[x] are 0 based offsets
+  for MatchInternal := 0 to Pred(MatchesCount) do begin
+    //Copy information up to next match
+    AdvanceIndex:=aMatches[MatchInternal]+1-MatchIndex;
+    if AdvanceIndex>0 then begin
+      move(S[MatchIndex],Result[MatchTarget],AdvanceIndex);
+      Inc(MarchTargetU, UTF8LengthFast(@S[MatchIndex], AdvanceIndex));
+      inc(MatchTarget,AdvanceIndex);
+      inc(MatchIndex,AdvanceIndex);
+    end;
+    aMatches[MatchInternal] := MarchTargetU;
+    Inc(MarchTargetU, NewPatternSizeU);
+    //Copy the new replace information string
+    if NewPatternSize>0 then begin
+      move(NewPattern[1],Result[MatchTarget],NewPatternSize);
+      inc(MatchTarget,NewPatternSize);
+    end;
+    inc(MatchIndex,OldPatternSize);
+  end;
+  if MatchTarget<=Length(Result) then begin
+    //Add remain data at the end of source.
+    move(S[MatchIndex],Result[MatchTarget],Length(Result)-MatchTarget+1);
+  end;
+end;
+
+// 索引从 1 开始
+function UTF8Pos(const S,OldPattern: String; const IgnoreCase: Boolean = False): SizeInt;
+var
+  Matches: SizeIntArray;
+begin
+  UTF8FindMatches(S, OldPattern, Matches, False, IgnoreCase);
+  if Length(Matches) > 0 then
+    Result := Matches[Length(Matches) - 1] + 1
+  else
+    Result := 1;
+end;
+
+// 索引从 0 开始
+procedure UTF8SearchSpecial(ID: integer; const AText, ASearchText: string;
+  IgnoreCase: boolean; Rst: TSearchResult);
+var
+  i: Integer;
+  Matches: SizeIntArray;
+  SearchTextLen: Integer;
+begin
+  SearchTextLen := UTF8LengthFast(ASearchText);
+  UTF8FindMatches(AText, ASearchText, Matches, True, IgnoreCase);
+  for i := 0 to High(Matches) do
+    Rst.Add(ID, Matches[i], SearchTextLen);
+end;
+
+// 索引从 0 开始
+function UTF8ReplaceSpecial(ID: integer; const AText, ASearchText, AReplaceText: string;
+  IgnoreCase: boolean; Rst: TSearchResult): string;
+var
+  i: Integer;
+  Matches: SizeIntArray;
+  ReplaceTextLen: Integer;
+begin
+  ReplaceTextLen := UTF8LengthFast(AReplaceText);
+  Result := UTF8ReplaceMatches(AText, ASearchText, AReplaceText, Matches, True, IgnoreCase);
+  for i := 0 to High(Matches) do
+    Rst.Add(ID, Matches[i], ReplaceTextLen);
+end;
+
+// 查找 S1 和 S2 的不同之处，参数和返回值的索引都是从 1 开始，到 Length(S) 结束。
+// Start1 表示 S1 的起始查找位置，查找结果也通过该参数返回。
+// Start2 表示 S2 的起始查找位置，查找结果也通过该参数返回。
 // Reverse 为 True 表示向头查找，False 表示向尾查找。
 // 返回值：True 表示找到，False 表示没找到。
-// 如果没找到，则向头查找时，某一 Start 返回 0，向尾查找时某一 Start 返回 UTF8Length(Str)+1。
-function UTF8DiffBytePos(Str1, Str2: string; var Start1, Start2: SizeInt; Reverse: boolean = False): boolean;
+// 如果没找到，则向头查找时，某一 Start 返回 0，向尾查找时某一 Start 返回 UTF8Length(S)+1。
+function UTF8DiffBytePos(S1, S2: string; var Start1, Start2: SizeInt; Reverse: boolean = False): boolean;
 
-  procedure GoToCpStartStr1;
+  procedure GoToCpStartS1;
   var
     b: byte;
-  begin  // 回到 Str1 中字符码点的起始位置
+  begin  // 回到 S1 中字符码点的起始位置
     while Start1 > 0 do begin // 如果 UTF8 编码不正确，则 Start1 可能小于等于 0。
-      b := Ord(Str1[Start1]) shr 6;
+      b := Ord(S1[Start1]) shr 6;
       if (b = 3) or (b shr 1 = 0) then
         break;
       Dec(Start1);
     end;
   end;
 
-  procedure GoToCpStartStr2;
+  procedure GoToCpStartS2;
   var
     b: byte;
-  begin  // 回到 Str2 中字符码点的起始位置
+  begin  // 回到 S2 中字符码点的起始位置
     while Start2 > 0 do begin // 如果 UTF8 编码不正确，则 Start2 可能小于等于 0。
-      b := Ord(Str2[Start2]) shr 6;
+      b := Ord(S2[Start2]) shr 6;
       if (b = 3) or (b shr 1 = 0) then
         break;
       Dec(Start2);
@@ -465,127 +543,88 @@ function UTF8DiffBytePos(Str1, Str2: string; var Start1, Start2: SizeInt; Revers
 
 begin
   Result := False;
-  if (Start1 <= 0) or (Start2 <= 0) or (Start1 > Str1.Length) or (Start2 > Str2.Length) then Exit;
+  if (Start1 <= 0) or (Start2 <= 0) or (Start1 > Length(S1)) or (Start2 > Length(S2)) then Exit;
 
   if Reverse then begin
-    while (Start1 >= 1) and (Start2 >= 1) and (Str1[Start1] = Str2[Start2]) do begin
+    while (Start1 >= 1) and (Start2 >= 1) and (S1[Start1] = S2[Start2]) do begin
       Dec(Start1);
       Dec(Start2);
     end;
     if Start1 > 1 then
-      GoToCpStartStr1;
+      GoToCpStartS1;
     if Start2 > 1 then
-      GoToCpStartStr2;
+      GoToCpStartS2;
     Result := (Start1 > 0) and (Start2 > 0);
   end else begin
-    while (Start1 <= Str1.Length) and (Start2 <= Str2.Length) and (Str1[Start1] = Str2[Start2]) do begin
+    while (Start1 <= Length(S1)) and (Start2 <= Length(S2)) and (S1[Start1] = S2[Start2]) do begin
       Inc(Start1);
       Inc(Start2);
     end;
-    if Start1 <= Str1.Length then
-      GoToCpStartStr1;
-    if Start2 <= Str2.Length then
-      GoToCpStartStr2;
-    Result := (Start1 <= Str1.Length) and (Start2 <= Str2.Length);
+    if Start1 <= Length(S1) then
+      GoToCpStartS1;
+    if Start2 <= Length(S2) then
+      GoToCpStartS2;
+    Result := (Start1 <= Length(S1)) and (Start2 <= Length(S2));
   end;
-end;
-
-// 查找 Str1 和 Str2 的不同之处，参数和返回值的索引都是从 1 开始，到 UTF8Length(Str) 结束。
-// Start1 表示 Str1 的起始查找位置，查找结果也通过该参数返回。
-// Start2 表示 Str2 的起始查找位置，查找结果也通过该参数返回。
-// Reverse 为 True 表示向头查找，False 表示向尾查找。
-// 返回值：True 表示找到，False 表示没找到。
-// 如果没找到，则向头查找时，某一 Start 返回 0，向尾查找时某一 Start 返回 UTF8Length(Str)+1。
-function UTF8Diff(Str1, Str2: string; var Start1, Start2: SizeInt; Reverse: boolean = False): boolean;
-begin
-  if not Reverse then begin
-    Dec(Start1);
-    Dec(Start2);
-  end;
-
-  Start1 := UTF8CharToByteIndex(PChar(Str1), Str1.Length, Start1);
-  Start2 := UTF8CharToByteIndex(PChar(Str2), Str2.Length, Start2);
-
-  if not Reverse then begin
-    Inc(Start1);
-    Inc(Start2);
-  end;
-
-  Result := UTF8DiffBytePos(Str1, Str2, Start1, Start2, Reverse);
-
-  if Start1 > 0 then Start1 := UTF8Length(PChar(Str1), Start1 - 1) + 1;
-  if Start2 > 0 then Start2 := UTF8Length(PChar(Str2), Start2 - 1) + 1;
 end;
 
 // 将 \r\n 或 \r 转换为 \n
-function ToLF(Str: string): string;
+function ToLF(S: string): string;
 var
-  iStart, iEnd: SizeInt;
-  Stream: TStringStream;
+  Index: integer;
+  LastIndex: integer;
+  ResultIndex: integer;
 begin
-  iStart := 0;
-  Stream := TStringStream.Create('');
-  try
-    iEnd := Str.IndexOf(#13, iStart);
-    while iEnd <> -1 do begin
-      Stream.WriteString(Str.Substring(iStart, iEnd - iStart));
-      if (iEnd = Str.Length - 1) or (Str[iEnd + 2] <> #10) then
-        Stream.WriteString(#10);
-      iStart := iEnd + 1;
-      iEnd := Str.IndexOf(#13, iStart);
-    end;
-    if (iEnd < Str.Length - 1) then
-      Stream.WriteString(Str.Substring(iStart));
-    Result := Stream.DataString;
-  finally
-    Stream.Free;
+  if S = '' then Exit;
+
+  Index := 1;
+  LastIndex := 1;
+  ResultIndex := 1;
+  SetLength(Result, Length(S));
+  while Index < Length(S) do begin
+    if S[Index] = #13 then begin
+      move(S[LastIndex], Result[ResultIndex], Index - LastIndex);
+      Inc(ResultIndex, Index - LastIndex);
+      Inc(Index);
+      LastIndex := Index;
+      if S[Index] = #10 then continue;
+      Result[ResultIndex] := #10;
+      Inc(ResultIndex);
+    end else
+      Inc(Index);
   end;
+  move(S[LastIndex], Result[ResultIndex], Length(S) - LastIndex);
+  Inc(ResultIndex, Length(S) - LastIndex);
+  if S[Length(S)] = #13 then
+    Result[ResultIndex] := #10
+  else
+    Result[ResultIndex] := S[Length(S)];
+  SetLength(Result, ResultIndex);
 end;
 
 // 将 \n 转换为系统默认的换行符
-function ToLineEnding(Str: string): string;
-var
-  StartPos, EndPos: integer;
-  Stream: TStringStream;
+function ToLineEnding(S: string): string;
 begin
-  if LineEnding = #10 then begin
-    Result := Str;
-    Exit;
-  end;
-
-  StartPos := 0;
-  Stream := TStringStream.Create('');
-  try
-    EndPos := Str.IndexOf(#10, StartPos);
-    while EndPos <> -1 do begin
-      Stream.WriteString(Str.Substring(StartPos, EndPos - StartPos));
-      Stream.WriteString(LineEnding);
-      StartPos := EndPos + 1;
-      EndPos := Str.IndexOf(#10, StartPos);
-    end;
-    if (EndPos < Str.Length - 1) then
-      Stream.WriteString(Str.Substring(StartPos));
-    Result := Stream.DataString;
-  finally
-    Stream.Free;
-  end;
+  Result := StringReplace(S, #10, LineEnding, [rfReplaceAll], sraBoyerMoore);
 end;
 
+{
 // 将特殊字符（#13 #10 #9 \）转换为转义字符(\r \n \t \\)
 // 字符串中原有的 \r \n \t \\ 不会进行处理
-function Escape(Str: string): string;
+// 这个转换函数会影响正则表达式字符串，所以弃用
+function Escape_Abandoned(S: string): string;
 var
-  Start     : SizeInt;
+  StartPos  : SizeInt;
   i         : SizeInt;
   c         : Char;
   MeetSlash : boolean;
 begin
-  Start := 1;
-  Result := '';
+  StartPos  := 1;
+  Result    := '';
   MeetSlash := False;
 
-  for i := 1 to Str.Length do begin
-    c := Str[i];
+  for i := 1 to Length(S) do begin
+    c := S[i];
     if MeetSlash then begin
       MeetSlash := False;
       case c of
@@ -600,15 +639,61 @@ begin
         else continue;
       end;
     end;
-    Result := Result + Str.SubString(Start - 1, i - Start) + '\' + c;
-    Start := i + 1;
+    Result := Result + Copy(S, StartPos, i - StartPos) + '\' + c;
+    StartPos := i + 1;
   end;
-  Result := Result + Str.SubString(Start - 1, Str.Length - Start + 1);
-  if MeetSlash then Result := Result + '\';
+
+  if StartPos <= Length(S) then
+    Result := Result + Copy(S, StartPos, Length(S) - StartPos + 1);
+end;
+}
+
+// 将特殊字符（#13 #10 #9）转换为转义字符(\r \n \t)
+// 这个转换函数不会处理 \ 字符，所以可以用于正则表达式字符串
+function Escape(S: string): string;
+var
+  StartPos  : SizeInt;
+  i         : SizeInt;
+  c         : Char;
+  SS        : string;
+  MeetSlash : Boolean;
+begin
+  StartPos  := 1;
+  Result    := '';
+  SS        := '';
+  MeetSlash := False;
+
+  for i := 1 to Length(S) do begin
+    c := S[i];
+    if MeetSlash then begin
+      MeetSlash := False;
+      case c of
+        #13: SS := '\\r';
+        #10: SS := '\\n';
+        #9 : SS := '\\t';
+        else continue;
+      end;
+    end else begin
+      case c of
+        '\': begin MeetSlash := True; continue; end;
+        #13: SS := '\r';
+        #10: SS := '\n';
+        #9 : SS := '\t';
+        else continue;
+      end;
+    end;
+    Result := Result + Copy(S, StartPos, i - StartPos) + SS;
+    StartPos := i + 1;
+  end;
+
+  if StartPos <= Length(S) then
+    Result := Result + Copy(S, StartPos, Length(S) - StartPos + 1);
 end;
 
 // 将转义字符（\r \n \t \\）转换为特殊字符（#13 #10 #9 \）
-function UnEscape(Str: string): string;
+// 其它地方单独的 \ 字符会被保留
+// 与 Escape 函数配合使用
+function UnEscape(S: string): string;
 var
   Start     : SizeInt;
   i         : SizeInt;
@@ -619,8 +704,8 @@ begin
   Result    := '';
   MeetSlash := False;
 
-  for i := 1 to Str.Length do begin
-    c := Str[i];
+  for i := 1 to Length(S) do begin
+    c := S[i];
     if MeetSlash then begin
       MeetSlash := False;
       case c of
@@ -628,15 +713,17 @@ begin
         'r': Result := Result + #13;
         'n': Result := Result + #10;
         't': Result := Result + #9;
-        else Result := Result + c;
+        else Result := Result + '\' + c;
       end;
     end else if c = '\' then begin
       MeetSlash := True;
-      Result := Result + Str.SubString(Start - 1, i - Start);
+      Result := Result + Copy(S, Start, i - Start);
       Start := i + 2;
     end;
   end;
-  Result := Result + Str.SubString(Start - 1, Str.Length - Start + 1);
+
+  if Start <= Length(S) then
+    Result := Result + Copy(S, Start, Length(S) - Start + 1);
 end;
 
 // 读取文本文件内容，同时将换行符统一为 #10
@@ -662,7 +749,7 @@ begin
   AStream := TFileStream.Create(FileName, fmCreate);
   try
     Text := ToLineEnding(Text);
-    AStream.WriteBuffer(Text[1], Text.Length);
+    AStream.WriteBuffer(Text[1], Length(Text));
   finally
     AStream.Free;
   end;
@@ -680,7 +767,7 @@ begin
 end;
 
 // 获取一个不存在的文件名（避免与现有文件重名）
-function GetNotExistsPath(ToDir, FileName, FileExt: string; LenSuffix: integer): string;
+function GetNonExistsPath(ToDir, FileName, FileExt: string; LenSuffix: integer): string;
 var
   i: integer;
   Suffix: string;

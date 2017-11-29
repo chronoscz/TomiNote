@@ -143,13 +143,13 @@ object formMain: TformMain
     Height = 30
     Top = 336
     Width = 600
-    Panels = <    
+    Panels = <
       item
         Width = 260
-      end    
+      end
       item
         Width = 320
-      end    
+      end
       item
         Width = 260
       end>
@@ -1265,7 +1265,6 @@ object formMain: TformMain
       Caption = 'Delete(&D)'
       ImageIndex = 28
       OnExecute = actnDeleteExecute
-      ShortCut = 46
     end
     object actnUndo: TAction
       Category = 'Note'

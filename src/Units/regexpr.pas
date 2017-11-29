@@ -82,6 +82,7 @@ interface
 {$ENDIF}
 
 // ======== Define options for TRegExpr engine
+// 我只修改了这里，以支持 Unicode
 {$DEFINE UniCode} // Unicode support
 {$ifdef FPC_OS_UNICODE}
   {$define UNICODE}

@@ -12,20 +12,20 @@ type
   { TformTextUtils }
 
   TformTextUtils = class(TForm)
-    pgctMain: TPageControl;
-    tabsScript: TTabSheet;
-    pnlScript: TPanel;
-    lstbScriptList: TListBox;
-    spltScript: TSplitter;
-    memoScript: TMemo;
-    editScriptName: TEdit;
-    bttnAddScript: TButton;
-    bttnDeleteScript: TButton;
-    bttnModifyScript: TButton;
-    chkbSearchInSelection: TCheckBox;
+    pgctMain              : TPageControl;
+    tabsScript            : TTabSheet;
+    pnlScript             : TPanel;
+    lstbScriptList        : TListBox;
+    spltScript            : TSplitter;
+    memoScript            : TMemo;
+    editScriptName        : TEdit;
+    bttnAddScript         : TButton;
+    bttnDeleteScript      : TButton;
+    bttnModifyScript      : TButton;
+    chkbSearchInSelection : TCheckBox;
 
-    bttnOK: TButton;
-    bttnCancel: TButton;
+    bttnOK                : TButton;
+    bttnCancel            : TButton;
 
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
@@ -40,7 +40,6 @@ type
   private
     FLastScriptName : string;
     FScripts        : TStringList;
-    procedure DeleteSelected;
     procedure LoadScrips;
     procedure SaveScripts;
     procedure OKEvent;
@@ -59,7 +58,7 @@ resourcestring
 implementation
 
 uses
-  fmain, uconfig;
+  fmain, uconfig, ucommon;
 
 const
   ScriptFile = 'script.ini';
@@ -169,17 +168,24 @@ procedure TformTextUtils.bttnDeleteScriptClick(Sender: TObject);
 var
   Index: integer;
 begin
-  if lstbScriptList.ItemIndex = -1 then Exit;
-  if Application.MessageBox(PChar(Res_DelItemWarning), PChar(Caption), MB_YESNO + MB_ICONWARNING) <> ID_YES then Exit;
-
-  FScripts.Delete(FScripts.IndexOfName(lstbScriptList.Items[lstbScriptList.ItemIndex]));
-
   Index := lstbScriptList.ItemIndex;
 
-  if FLastScriptName = lstbScriptList.Items[lstbScriptList.ItemIndex] then
+  if Index = -1 then Exit;
+
+  {
+  // hold Shift key to ignore warning
+  if (not IsKeyDown(VK_SHIFT)) and (Application.MessageBox(PChar(Res_DelItemWarning), PChar(Caption), MB_YESNO + MB_ICONWARNING) <> ID_YES) then Exit;
+  }
+
+  // can't ignore warning
+  if Application.MessageBox(PChar(Res_DelItemWarning), PChar(Caption), MB_YESNO + MB_ICONWARNING) <> ID_YES then Exit;
+
+  FScripts.Delete(FScripts.IndexOfName(lstbScriptList.Items[Index]));
+
+  if FLastScriptName = lstbScriptList.Items[Index] then
     FLastScriptName := '';
 
-  DeleteSelected;
+  lstbScriptList.Items.Delete(Index);
 
   if lstbScriptList.Count - 1 >= Index then
     lstbScriptList.ItemIndex := Index
@@ -198,25 +204,6 @@ begin
   if lstbScriptList.ItemIndex = -1 then Exit;
 
   lstbScriptList.Items[lstbScriptList.ItemIndex] := editScriptName.Text;
-end;
-
-procedure TformTextUtils.DeleteSelected;
-var
-  i: Integer;
-begin
-  with lstbScriptList do
-  if MultiSelect then
-  begin
-    i := Items.Count;
-    while i > 0 do
-    begin
-      dec(i);
-      if Selected[i] then
-        Items.Delete(i);
-    end;
-  end else
-    if ItemIndex>=0 then
-      Items.Delete(ItemIndex);
 end;
 
 procedure TformTextUtils.editScriptNameKeyPress(Sender: TObject; var Key: char);
@@ -250,7 +237,7 @@ begin
           lstbScriptList.Items.Add(Title);
           Content := '';
         end;
-        Title := Line.Substring(1, Length(Line) - 2);
+        Title := Copy(Line, 2, Length(Line) - 2);
       end else if Content = '' then
         Content := Line
       else
@@ -314,3 +301,4 @@ begin
 end;
 
 end.
+
